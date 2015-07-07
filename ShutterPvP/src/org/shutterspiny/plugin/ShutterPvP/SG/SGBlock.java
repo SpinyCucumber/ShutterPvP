@@ -1,14 +1,16 @@
 package org.shutterspiny.plugin.ShutterPvP.SG;
 
-import org.bukkit.Location;
-
 public abstract class SGBlock {
 	
-	protected Location location;
+	public SLocation location;
 	
+	public SLocation getLocation() {
+		return location;
+	}
+
 	public abstract void set();
 	
-	public SGBlock(Location location) {
+	public SGBlock(SLocation location) {
 		this.location = location;
 	}
 	

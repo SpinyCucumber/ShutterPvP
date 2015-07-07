@@ -1,13 +1,14 @@
 package org.shutterspiny.plugin.ShutterPvP.SG;
 
-import org.bukkit.Location;
-
 public class SGChest extends SGBlock {
 
-	@SuppressWarnings("unused")
 	private double rarity;
 
-	public SGChest(Location location, double rarity) {
+	public double getRarity() {
+		return rarity;
+	}
+
+	public SGChest(SLocation location, double rarity) {
 		super(location);
 		this.rarity = rarity;
 	}
