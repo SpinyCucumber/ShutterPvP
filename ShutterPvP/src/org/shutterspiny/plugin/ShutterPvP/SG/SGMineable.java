@@ -22,6 +22,7 @@ public class SGMineable extends SGBlock {
 		this.type = type;
 	}
 	
+	//Debug junk
 	public static void main(String[] args) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
 		mapper.writeValue(new File("Derp"), new SGMineable(new SLocation("overworld",10,20,2), "DIRT"));
