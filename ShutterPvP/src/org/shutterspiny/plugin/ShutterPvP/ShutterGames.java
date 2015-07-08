@@ -41,13 +41,11 @@ public class ShutterGames extends JavaPlugin {
 		
 		Map<String, Object> files;
 		File folder = this.getDataFolder();
-		
 		try {
 			
 			files = parentNode.load(folder);
 			maps = (Map<String, SGMap>) files.get("maps");
 			items = (SGItem[]) files.get("items.json");
-			
 		} catch(IOException e) {
 			
 			log(Level.WARNING, "Data files either missing or corrupted. Saving default data.");

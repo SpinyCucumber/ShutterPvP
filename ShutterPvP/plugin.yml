@@ -1,4 +1,4 @@
 name: ShutterPvP
-main: org.shutterspiny.plugin.ShutterPvP
+main: org.shutterspiny.plugin.ShutterPvP.ShutterGames
 version: 0.5
 commands:
