@@ -1,4 +1,4 @@
-package org.shutterspiny.plugin.ShutterPvP.SG;
+package org.shutterspiny.plugin.ShutterPvP;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;

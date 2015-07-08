@@ -1,4 +1,4 @@
-package org.shutterspiny.plugin.ShutterPvP.SG;
+package org.shutterspiny.plugin.ShutterPvP;
 
 public abstract class SGBlock {
 	
@@ -8,7 +8,7 @@ public abstract class SGBlock {
 		return location;
 	}
 
-	public abstract void set();
+	public abstract void load();
 	
 	public SGBlock(SLocation location) {
 		this.location = location;

@@ -1,4 +1,4 @@
-package org.shutterspiny.plugin.ShutterPvP.SG;
+package org.shutterspiny.plugin.ShutterPvP;
 
 public class SGChest extends SGBlock {
 
@@ -14,7 +14,7 @@ public class SGChest extends SGBlock {
 	}
 
 	@Override
-	public void set() {
+	public void load() {
 		
 	}
 	
