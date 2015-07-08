@@ -26,6 +26,8 @@ public class ShutterGames extends JavaPlugin {
 	
 	static {
 		
+		ObjectMapper mapper = new ObjectMapper();
+		
 		parentNode = new ParentNode(new MapBuilder<String,FileNode<?>>()
 				.with("maps", new MapNode<SGMap>(new JSONObjectFile<SGMap>(SGMap.class)))
 				.end());
@@ -36,7 +38,7 @@ public class ShutterGames extends JavaPlugin {
 	private SGItem[] items;
 	
 	//Implementing WIP "PluginUtils" API, which includes a tree-like file loading system
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings("unchecked")		
 	private void load() {
 		
 		Map<String, Object> files;

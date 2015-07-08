@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="lib" path="lib/ebean-2.7.7.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-core-asl-1.9.13.jar"/>
-	<classpathentry kind="lib" path="lib/jackson-mapper-asl-1.9.13.jar"/>
+	<classpathentry combineaccessrules="false" exported="true" kind="src" path="/Pro-ject"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/Elijah/Downloads/jackson-core-asl-1.9.13.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/Elijah/Downloads/jackson-mapper-asl-1.9.13.jar"/>
+	<classpathentry exported="true" kind="lib" path="C:/Users/Elijah/Downloads/ebean-2.7.7/ebean-2.7.7/ebean-2.7.7.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Elijah/Downloads/bukkit-1.8.3-R0.1-SNAPSHOT-latest.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry combineaccessrules="false" kind="src" path="/Pro-ject"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
