@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.codehaus.jackson.map.ObjectMapper;
+
 public class SGMap {
 	
 	private SGMineable[] mineables;
@@ -39,7 +41,7 @@ public class SGMap {
 
 	//Debug junk
 	public static void main(String[] args) throws Exception {
-		ShutterGames.MAPPER.writeValue(new File("Derp"), new SGMap(new SGMineable[]{
+		new ObjectMapper().writeValue(new File("Derp"), new SGMap(new SGMineable[]{
 				new SGMineable(new SLocation("overworld", 5, 20, 10), "DIAMOND_BLOCK")},
 				new SGChest[]{}, 
 				new SLocation[]{}));
