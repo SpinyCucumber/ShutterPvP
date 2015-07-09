@@ -21,26 +21,34 @@ public class ShutterGames extends JavaPlugin {
 	private Map<String, SGMap> maps;
 	private SGItem[] items;
 	
-	private static void loadAPI(JarFile jar, String path, File dir) throws IOException {
-		File f = new File(dir, path);
-		if(!f.exists()) JarUtils.extractResource(jar, path, f);
-		JarUtils.addClassPath(f);
-	}
-	
 	//Implementing WIP "PluginUtils" API, which includes a tree-like file loading system
 	@SuppressWarnings("unchecked")		
 	private void load() {
 		
 		Map<String, Object> files;
-		File folder = this.getDataFolder(), libs = new File(folder, "lib");
+		File folder = this.getDataFolder();
 		FileNode<Map<String, Object>> parentNode = null;
 		
 		try {
 			
+			//Load apis
+			final File libs = new File(folder, "lib");
+			final JarFile jar = JarUtils.getRunningJar();
 			libs.mkdirs();
-			JarFile jar = JarUtils.getRunningJar();
-			loadAPI(jar, "jackson-core-asl-1.9.13.jar", libs);
-			loadAPI(jar, "jackson-mapper-asl-1.9.13.jar", libs);
+			
+			abstract class APILoader {
+				abstract void loadAPI(String path) throws IOException;
+			}
+			APILoader loader = new APILoader() {
+				void loadAPI(String path) throws IOException {
+					File f = new File(libs, path);
+					if(!f.exists()) JarUtils.extractResource(jar, path, f);
+					JarUtils.addClassPath(f);
+				}
+			};
+			
+			loader.loadAPI("jackson-core-asl-1.9.13.jar");
+			loader.loadAPI("jackson-mapper-asl-1.9.13.jar");
 			
 			parentNode = new ParentNode(new MapBuilder<String,FileNode<?>>()
 					.with("maps", new MapNode<SGMap>(new JSONObjectFile<SGMap>(SGMap.class)))
