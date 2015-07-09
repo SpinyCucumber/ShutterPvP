@@ -3,7 +3,8 @@ package org.shutterspiny.plugin.ShutterPvP;
 import org.bukkit.Location;
 
 public class SGChest extends SGBlock {
-
+	
+	public static SGPlugin plugin;
 	public double rarity;
 	
 	public SGChest(SLocation location, double rarity) {

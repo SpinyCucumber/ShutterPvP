@@ -1,5 +1,5 @@
 name: ShutterPvP
-main: org.shutterspiny.plugin.ShutterPvP.ShutterGames
+main: org.shutterspiny.plugin.ShutterPvP.SGPlugin
 version: 0.7
 commands:
   selectmap:
@@ -14,6 +14,12 @@ commands:
   addspawnpoint:
     description: Adds a spawnpoint at the block you're standing in.
     usage: /spawnpoint
+  sgsave:
+    description: Saves maps.
+  sgload:
+    description: Loads maps.
+  listmaps:
+    description: Lists maps.
 permissions:
   ShutterPvP.maps:
     desciption: Gives access to all SG map-editing commands. Ops have this permission by default.

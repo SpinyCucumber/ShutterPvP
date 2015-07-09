@@ -27,13 +27,30 @@ import org.shutterspiny.lib.PluginUtils.MapNode;
 import org.shutterspiny.lib.PluginUtils.ParentNode;
 
 //Temporary
-public class ShutterGames extends JavaPlugin {
+public class SGPlugin extends JavaPlugin {
 	
 	private Map<String, SGMap> maps;
 	private Map<UUID, SGPlayerData> playerData;
 	private SGItem[] items;
 	private ParentNode node;
+	private SGGame game;
 	
+	public Map<String, SGMap> getMaps() {
+		return maps;
+	}
+
+	public Map<UUID, SGPlayerData> getPlayerData() {
+		return playerData;
+	}
+
+	public SGItem[] getItems() {
+		return items;
+	}
+
+	public SGGame getGame() {
+		return game;
+	}
+
 	//Implementing WIP "PluginUtils" API, which includes a tree-like file loading system
 	@SuppressWarnings("unchecked")		
 	private void load() {
@@ -182,6 +199,18 @@ public class ShutterGames extends JavaPlugin {
 					map.spawnPoints = addToArray(map.spawnPoints, new SLocation(player.getLocation()));
 					player.sendMessage("Spawnpoint at " + loc + " has been successfully added to map " + data.selectedMap);
 				}
+				return true;
+			}
+			case "sgsave" : {
+				save();
+				return true;
+			}
+			case "sgload" : {
+				load();
+				return true;
+			}
+			case "listmaps" : {
+				for(String name : maps.keySet()) player.sendMessage(name);
 				return true;
 			}
 		}
