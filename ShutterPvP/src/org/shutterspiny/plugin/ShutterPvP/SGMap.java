@@ -6,26 +6,20 @@ import java.util.List;
 
 public class SGMap {
 	
-	private SGMineable[] mineables;
-	private SGChest[] chests;
-	private SLocation[] spawnPoints;
-	
-	public SGMineable[] getMineables() {
-		return mineables;
-	}
-
-	public SGChest[] getChests() {
-		return chests;
-	}
-
-	public SLocation[] getSpawnPoints() {
-		return spawnPoints;
-	}
+	public SGMineable[] mineables;
+	public SGChest[] chests;
+	public SLocation[] spawnPoints;
 
 	public SGMap(SGMineable[] mineables, SGChest[] chests, SLocation[] spawnPoints) {
 		this.mineables = mineables;
 		this.chests = chests;
 		this.spawnPoints = spawnPoints;
+	}
+	
+	public SGMap() {
+		this.mineables = new SGMineable[0];
+		this.chests = new SGChest[0];
+		this.spawnPoints = new SLocation[0];
 	}
 	
 	//Place blocks and randomize chests

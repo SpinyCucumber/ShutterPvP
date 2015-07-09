@@ -2,13 +2,24 @@ package org.shutterspiny.plugin.ShutterPvP;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.Block;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.shutterspiny.lib.PluginUtils.AdvancedMap;
+import org.shutterspiny.lib.PluginUtils.Factory;
 import org.shutterspiny.lib.PluginUtils.FileNode;
 import org.shutterspiny.lib.PluginUtils.JSONObjectFile;
 import org.shutterspiny.lib.PluginUtils.MapBuilder;
@@ -19,6 +30,7 @@ import org.shutterspiny.lib.PluginUtils.ParentNode;
 public class ShutterGames extends JavaPlugin {
 	
 	private Map<String, SGMap> maps;
+	private Map<UUID, SGPlayerData> playerData;
 	private SGItem[] items;
 	private ParentNode node;
 	
@@ -53,14 +65,20 @@ public class ShutterGames extends JavaPlugin {
 			loader.loadAPI("jackson-core-asl-1.9.13.jar");
 			loader.loadAPI("jackson-mapper-asl-1.9.13.jar");
 			
+			//Use plugin utils to load files
 			node = new ParentNode(new MapBuilder<String,FileNode<?>>()
-					.with("maps", new MapNode<SGMap>(new JSONObjectFile<SGMap>(SGMap.class)))
+					.with("maps", new MapNode<SGMap>(new JSONObjectFile<SGMap>(SGMap.class), new Factory<Map<String,SGMap>>(){ public Map<String, SGMap> create() { return new HashMap<String, SGMap>();}}, ".json"))
 					.with("items.json", new JSONObjectFile<SGItem[]>(SGItem[].class))
 					.end());
 			
 			try {
 				
 				log(Level.INFO, "Loading data...");
+				playerData = new AdvancedMap<UUID, SGPlayerData>(new Factory<SGPlayerData>(){
+					public SGPlayerData create() {
+						return new SGPlayerData();
+					}
+				});
 				Map<String, Object> files = node.load(folder);
 				maps = (Map<String, SGMap>) files.get("maps");
 				items = (SGItem[]) files.get("items.json");
@@ -69,6 +87,7 @@ public class ShutterGames extends JavaPlugin {
 			} catch(IOException e) {
 				
 				log(Level.WARNING, "Data files either missing or corrupted. Using default data.");
+				e.printStackTrace();
 				maps = new HashMap<String, SGMap>();
 				items = new SGItem[0];
 			
@@ -94,11 +113,84 @@ public class ShutterGames extends JavaPlugin {
 		try {
 			node.save(getDataFolder(), files);
 		} catch (IOException e) {
+			log(Level.SEVERE, "Error saving. Data may have been lost!");
 			e.printStackTrace();
 		}
 		
 		log(Level.INFO, "Successfully saved data.");
 		
+	}
+	
+	/*Was thinking about making more complicated command executor, but ended up not doing it.
+	 * Maybe for a larger plugin.
+	 */
+	@Override
+	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+		if(!(sender instanceof Player)) return false;
+		Player player = (Player) sender;
+		if(!player.hasPermission("ShutterPvP.maps")) {
+			player.sendMessage("You do not have permission to use this command.");
+			return false;
+		}
+		SGPlayerData data = playerData.get(player.getUniqueId());
+		switch(command.getName()) {
+			case "selectmap" : {
+				if(args.length == 0) {
+					data.selectedMap = null;
+					player.sendMessage("You have deselected your map.");
+				} else {
+					if(!maps.containsKey(args[0])) {
+						player.sendMessage("New map " + args[0] + " created.");
+						maps.put(args[0], new SGMap());
+						log(Level.INFO, "New map " + args[0] + " has been created.");
+					}
+					data.selectedMap = args[0];
+					player.sendMessage("Map " + args[0] + " has been selected.");
+				}
+				return true;
+			}
+			case "addmineable" : {
+				if(data.selectedMap == null) {
+					player.sendMessage("You have not selected a map. Use /selectmap <map-name> to select or create a map.");
+				} else {
+					SGMap map = maps.get(data.selectedMap);
+					Block block = player.getTargetBlock((Set<Material>) null, 100);
+					map.mineables = addToArray(map.mineables, new SGMineable(block));
+					player.sendMessage(block.getType() + " at " + block.getLocation() + " has been successfully added to map " + data.selectedMap + ".");
+				}
+				return true;
+			}
+			case "addchest" : {
+				if(data.selectedMap == null) {
+					player.sendMessage("You have not selected a map. Use /selectmap <map-name> to select or create a map.");
+				} else {
+					SGMap map = maps.get(data.selectedMap);
+					Location loc = player.getLocation().getBlock().getLocation();
+					double rarity = Double.parseDouble(args[0]);
+					loc.getBlock().setType(Material.CHEST);
+					map.chests = addToArray(map.chests, new SGChest(loc, rarity));
+					player.sendMessage("Chest at " + loc + " with rarity " + rarity + " has been successfully added to map " + data.selectedMap);
+				}
+				return true;
+			}
+			case "addspawnpoint" : {
+				if(data.selectedMap == null) {
+					player.sendMessage("You have not selected a map. Use /selectmap <map-name> to select or create a map.");
+				} else {
+					SGMap map = maps.get(data.selectedMap);
+					Location loc = player.getLocation();
+					map.spawnPoints = addToArray(map.spawnPoints, new SLocation(player.getLocation()));
+					player.sendMessage("Spawnpoint at " + loc + " has been successfully added to map " + data.selectedMap);
+				}
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	@Override
+	public void onEnable() {
+		load();
 	}
 	
 	@Override
@@ -114,10 +206,11 @@ public class ShutterGames extends JavaPlugin {
 	private void log(Level level, String msg) {
 		this.getLogger().log(level, msg);
 	}
-	
-	@Override
-	public void onEnable() {
-		load();
+
+	private static <T> T[] addToArray(T[] array, T element) {
+		T[] newArray = Arrays.copyOf(array, array.length + 1);
+		newArray[array.length] = element;
+		return newArray;
 	}
 	
 }

@@ -14,4 +14,6 @@ public abstract class SGBlock {
 		this.location = location;
 	}
 	
+	public SGBlock() {}
+	
 }

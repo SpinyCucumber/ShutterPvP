@@ -1,4 +1,20 @@
 name: ShutterPvP
 main: org.shutterspiny.plugin.ShutterPvP.ShutterGames
-version: 0.5
+version: 0.7
 commands:
+  selectmap:
+    description: Selects a SG map for editing. Creates new map if necessary.
+    usage: /selectmap <map-name> or /selectmap to deselect map
+  addmineable:
+    desciption: Makes the block you're looking at mineable during SG games on the selected map.
+    usage: /addmineable
+  addchest:
+    desciption: Adds a chest at the block you're standing in. Rarity argument represents how hard the chest is to get to.
+    usage: /addchest <rarity>
+  addspawnpoint:
+    description: Adds a spawnpoint at the block you're standing in.
+    usage: /spawnpoint
+permissions:
+  ShutterPvP.maps:
+    desciption: Gives access to all SG map-editing commands. Ops have this permission by default.
+    default: op
