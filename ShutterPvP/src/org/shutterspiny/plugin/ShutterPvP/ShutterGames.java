@@ -33,6 +33,7 @@ public class ShutterGames extends JavaPlugin {
 			final JarFile jar = JarUtils.getRunningJar();
 			libs.mkdirs();
 			
+			//local classes help with code repetition
 			abstract class APILoader {
 				abstract void loadAPI(String path) throws IOException;
 			}
@@ -83,9 +84,8 @@ public class ShutterGames extends JavaPlugin {
 		
 	}
 	
-	@Override
-	public void onDisable() {
-
+	private void save() {
+		
 		Map<String, Object> files = new HashMap<String, Object>();
 		files.put("maps", maps);
 		files.put("items.json", items);
@@ -99,6 +99,11 @@ public class ShutterGames extends JavaPlugin {
 		
 		log(Level.INFO, "Successfully saved data.");
 		
+	}
+	
+	@Override
+	public void onDisable() {
+		save();
 	}
 	
 	//For convenience
