@@ -20,19 +20,16 @@ public class ShutterGames extends JavaPlugin {
 	
 	private Map<String, SGMap> maps;
 	private SGItem[] items;
+	private ParentNode node;
 	
 	//Implementing WIP "PluginUtils" API, which includes a tree-like file loading system
 	@SuppressWarnings("unchecked")		
 	private void load() {
 		
-		Map<String, Object> files;
-		File folder = this.getDataFolder();
-		FileNode<Map<String, Object>> parentNode = null;
-		
 		try {
 			
 			//Load apis
-			final File libs = new File(folder, "lib");
+			final File folder = this.getDataFolder(), libs = new File(folder, "lib");
 			final JarFile jar = JarUtils.getRunningJar();
 			libs.mkdirs();
 			
@@ -42,35 +39,37 @@ public class ShutterGames extends JavaPlugin {
 			APILoader loader = new APILoader() {
 				void loadAPI(String path) throws IOException {
 					File f = new File(libs, path);
-					if(!f.exists()) JarUtils.extractResource(jar, path, f);
+					if(!f.exists()) {
+						JarUtils.extractResource(jar, path, f);
+						log(Level.INFO, "Successfully extracted " + path + " from jar.");
+					}
 					JarUtils.addClassPath(f);
+					log(Level.INFO, "Successfully loaded " + path + " from lib folder.");
 				}
 			};
 			
+			log(Level.INFO, "Loading apis...");
 			loader.loadAPI("jackson-core-asl-1.9.13.jar");
 			loader.loadAPI("jackson-mapper-asl-1.9.13.jar");
 			
-			parentNode = new ParentNode(new MapBuilder<String,FileNode<?>>()
+			node = new ParentNode(new MapBuilder<String,FileNode<?>>()
 					.with("maps", new MapNode<SGMap>(new JSONObjectFile<SGMap>(SGMap.class)))
 					.with("items.json", new JSONObjectFile<SGItem[]>(SGItem[].class))
 					.end());
 			
 			try {
-
-				files = parentNode.load(folder);
+				
+				log(Level.INFO, "Loading data...");
+				Map<String, Object> files = node.load(folder);
 				maps = (Map<String, SGMap>) files.get("maps");
 				items = (SGItem[]) files.get("items.json");
+				log(Level.INFO, "Successfully loaded data.");
 				
 			} catch(IOException e) {
 				
-				log(Level.WARNING, "Data files either missing or corrupted. Saving default data.");
+				log(Level.WARNING, "Data files either missing or corrupted. Using default data.");
 				maps = new HashMap<String, SGMap>();
 				items = new SGItem[0];
-				files = new HashMap<String, Object>();
-				files.put("maps", maps);
-				files.put("items.json", items);
-				
-				parentNode.save(folder, files);
 			
 			}
 				
@@ -81,6 +80,24 @@ public class ShutterGames extends JavaPlugin {
 			e.printStackTrace();
 			
 		}
+		
+	}
+	
+	@Override
+	public void onDisable() {
+
+		Map<String, Object> files = new HashMap<String, Object>();
+		files.put("maps", maps);
+		files.put("items.json", items);
+		
+		log(Level.INFO, "Saving data...");
+		try {
+			node.save(getDataFolder(), files);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		log(Level.INFO, "Successfully saved data.");
 		
 	}
 	
