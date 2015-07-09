@@ -18,6 +18,7 @@ public class SGGame implements Listener {
 	private SGPlugin pluginInstance;
 	private String mapName;
 	private List<Player> players;
+	private boolean started;
 	
 	public void start() {
 		SGMap map = pluginInstance.getMaps().get(mapName);
@@ -40,6 +41,7 @@ public class SGGame implements Listener {
 				broadcast(countdown + " until the games begin...");
 				if(countdown == 0) {
 					this.cancel();
+					started = true;
 					broadcast("THE GAMES HAVE BEGUN!");
 					for(BukkitRunnable runnable : runnables) runnable.cancel();
 				}
@@ -47,12 +49,24 @@ public class SGGame implements Listener {
 		}.runTaskTimer(pluginInstance, 0, 20);
 	}
 	
+	public void end() {
+		broadcast("The game has ended.");
+		started = false;
+		players.clear();
+	}
+	
 	@EventHandler
 	public void onPlayerDeath(PlayerDeathEvent event) {
+		if(!started) return;
 		Player player = event.getEntity();
 		if(!players.contains(player)) return;
 		broadcast(player.getName() + " has died!");
 		players.remove(player);
+		if(players.size() == 1) {
+			Player winner = players.get(0);
+			broadcast(winner.getName() + " has won!");
+			end();
+		}
 	}
 	
 	public void join(Player player) {
