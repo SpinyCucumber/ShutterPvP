@@ -20,7 +20,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class SGGame implements Listener {
 	
-	private static final int COUNTDOWN = 3;
+	private static final int COUNTDOWN = 4;
 	
 	private SGPlugin pluginInstance;
 	public String mapName;
@@ -77,13 +77,12 @@ public class SGGame implements Listener {
 			int countdown = COUNTDOWN;
 			public void run() {
 				countdown--;
-				broadcast(countdown + " until the games begin...");
 				if(countdown == 0) {
 					this.cancel();
 					started = true;
 					broadcast("THE GAMES HAVE BEGUN!");
 					for(BukkitRunnable runnable : runnables) runnable.cancel();
-				}
+				} else broadcast(countdown + " until the games begin...");
 			}
 		}.runTaskTimer(pluginInstance, 0, 20);
 	}
