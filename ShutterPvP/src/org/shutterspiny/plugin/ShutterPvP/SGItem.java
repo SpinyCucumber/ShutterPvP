@@ -1,12 +1,10 @@
 package org.shutterspiny.plugin.ShutterPvP;
 
-import java.io.File;
 import java.util.Random;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.codehaus.jackson.map.ObjectMapper;
 
 public class SGItem {
 	
@@ -43,19 +41,6 @@ public class SGItem {
 	public SGItem(ItemStack stack, double rarity, int minCount, int maxCount, int minDamage, int maxDamage) {
 		this(rarity, stack.getType().name(), minCount, maxCount, minDamage, maxDamage,
 				stack.getItemMeta() == null ? null : stack.getItemMeta().getDisplayName());
-	}
-	
-	//Debug junk
-	public static void main(String[] args) throws Exception {
-		ObjectMapper mapper = new ObjectMapper();
-		SGMap map = new SGMap(
-				new String[]{},
-				new String[]{},
-				new SGChest[]{new SGChest(new SLocation("overworld", 5, 10, 2), 5.9),
-						new SGChest(new SLocation("overworld", 2, 60, 10), 11),
-						new SGChest(new SLocation("overworld", 5, -9, 6), 1.2)},
-				new SLocation[]{});
-		mapper.writerWithDefaultPrettyPrinter().writeValue(new File("Derp"), map);
 	}
 	
 }

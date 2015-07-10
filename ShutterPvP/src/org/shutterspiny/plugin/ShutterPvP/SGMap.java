@@ -2,16 +2,16 @@ package org.shutterspiny.plugin.ShutterPvP;
 
 import java.util.Arrays;
 
-import org.bukkit.Material;
+import org.bukkit.block.Block;
 
 public class SGMap {
 	
-	public String[] mineables;
-	public String[] placeables;
+	public SGBlockType[] mineables;
+	public SGBlockType[] placeables;
 	public SGChest[] chests;
 	public SLocation[] spawnPoints;
 	
-	public SGMap(String[] mineables, String[] placeables, SGChest[] chests,
+	public SGMap(SGBlockType[] mineables, SGBlockType[] placeables, SGChest[] chests,
 			SLocation[] spawnPoints) {
 		this.mineables = mineables;
 		this.placeables = placeables;
@@ -20,18 +20,18 @@ public class SGMap {
 	}
 
 	public SGMap() {
-		this.mineables = new String[0];
-		this.placeables = new String[0];
+		this.mineables = new SGBlockType[0];
+		this.placeables = new SGBlockType[0];
 		this.chests = new SGChest[0];
 		this.spawnPoints = new SLocation[0];
 	}
 	
-	public boolean isMineable(Material type) {
-		return Arrays.asList(mineables).contains(type.name());
+	public boolean isMineable(Block block) {
+		return Arrays.asList(mineables).contains(new SGBlockType(block));
 	}
 	
-	public boolean isPlaceable(Material type) {
-		return Arrays.asList(placeables).contains(type.name());
+	public boolean isPlaceable(Block block) {
+		return Arrays.asList(placeables).contains(new SGBlockType(block));
 	}
 	
 	//Place blocks and randomize chests

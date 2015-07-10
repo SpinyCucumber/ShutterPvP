@@ -10,11 +10,14 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
@@ -110,6 +113,7 @@ public class SGGame implements Listener {
 		if(playersClone.size() == 1) {
 			Player winner = playersClone.get(0);
 			broadcast(winner.getName() + " has won!");
+			event.getDrops().clear();
 			end();
 		} else players = playersClone;
 	}
@@ -120,8 +124,16 @@ public class SGGame implements Listener {
 		if(!players.contains(player)) return;
 		SGMap map = pluginInstance.getMaps().get(mapName);
 		Block block = event.getBlock();
-		if(map.isMineable(block.getType())) blocks.add(new SGBlock(block));
-		else if(!map.isPlaceable(block.getType())) event.setCancelled(true);
+		if(map.isMineable(block)) blocks.add(new SGBlock(block));
+		else if(!map.isPlaceable(block)) event.setCancelled(true);
+	}
+	
+	@EventHandler
+	public void onExplode(EntityExplodeEvent event) {
+		if(!(event.getEntityType() == EntityType.PRIMED_TNT)) return;
+		TNTPrimed entity = (TNTPrimed) event.getEntity();
+		if(!players.contains(entity.getSource())) return;
+		for(Block block : event.blockList()) blocks.add(new SGBlock(block));
 	}
 	
 	@EventHandler
@@ -130,7 +142,7 @@ public class SGGame implements Listener {
 		if(!players.contains(player)) return;
 		SGMap map = pluginInstance.getMaps().get(mapName);
 		Block block = event.getBlock();
-		if(map.isPlaceable(block.getType())) blocks.add(new SGBlock(block.getLocation(), Material.AIR));
+		if(map.isPlaceable(block)) blocks.add(new SGBlock(block.getLocation(), Material.AIR));
 		else event.setCancelled(true);
 	}
 	
