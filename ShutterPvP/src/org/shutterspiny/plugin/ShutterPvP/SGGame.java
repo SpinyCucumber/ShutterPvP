@@ -75,14 +75,13 @@ public class SGGame implements Listener {
 		new BukkitRunnable() {
 			int countdown = pluginInstance.getConfig().getInt("Countdown");
 			public void run() {
-				broadcast(countdown + " seconds until the games begin...");
-				countdown--;
 				if(countdown == 0) {
 					this.cancel();
 					started = true;
 					broadcast("THE GAMES HAVE BEGUN!");
 					for(BukkitRunnable runnable : runnables) runnable.cancel();
-				}
+				} else broadcast(countdown + " seconds until the games begin...");
+				countdown--;
 			}
 		}.runTaskTimer(pluginInstance, 0, 20);
 	}

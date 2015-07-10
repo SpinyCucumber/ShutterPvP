@@ -93,6 +93,7 @@ public class SGPlugin extends JavaPlugin {
 			try {
 				
 				log(Level.INFO, "Loading data...");
+				this.reloadConfig();
 				Map<String, Object> files = node.load(folder);
 				maps = (Map<String, SGMap>) files.get("maps");
 				items = (SGItem[]) files.get("items.json");
