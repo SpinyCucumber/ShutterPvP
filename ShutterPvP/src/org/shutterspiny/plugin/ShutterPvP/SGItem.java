@@ -47,7 +47,8 @@ public class SGItem {
 	public static void main(String[] args) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
 		SGMap map = new SGMap(
-				new SGMineable[]{},
+				new String[]{},
+				new String[]{},
 				new SGChest[]{new SGChest(new SLocation("overworld", 5, 10, 2), 5.9),
 						new SGChest(new SLocation("overworld", 2, 60, 10), 11),
 						new SGChest(new SLocation("overworld", 5, -9, 6), 1.2)},

@@ -9,7 +9,7 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.inventory.Inventory;
 
-public class SGChest extends SGBlock {
+public class SGChest {
 	
 	//Will be moved to config.yml eventually
 	private final static int MIN_ITEMS = 5, MAX_ITEMS = 22;
@@ -17,10 +17,12 @@ public class SGChest extends SGBlock {
 	
 	public static SGPlugin pluginInstance;
 	private static Random random = new Random();
+	
 	public double rarity;
+	public SLocation location;
 	
 	public SGChest(SLocation location, double rarity) {
-		super(location);
+		this.location = location;
 		this.rarity = rarity;
 	}
 	
@@ -30,16 +32,16 @@ public class SGChest extends SGBlock {
 	
 	public SGChest() {}
 
-	@Override
 	public void load() {
 		Block block = location.toLocation().getBlock();
 		Inventory inventory = ((Chest) block.getState()).getBlockInventory();
 		inventory.clear();
 		List<SGItem> items = getAppropriateItems();
+		if(items.size() == 0) return;
 		int iterations = random.nextInt(MAX_ITEMS - MIN_ITEMS + 1) + MIN_ITEMS;
 		for(int i = 0; i < iterations; i++) {
 			int slot = random.nextInt(27);
-			SGItem item = items.get(random.nextInt(items.size()));
+			SGItem item = items.get(random.nextInt(items.size() + 1));
 			inventory.setItem(slot, item.toItemStack());
 		}
 	}

@@ -13,7 +13,6 @@ import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -156,17 +155,6 @@ public class SGPlugin extends JavaPlugin {
 					}
 					data.selectedMap = args[0];
 					player.sendMessage("Map " + args[0] + " has been selected.");
-				}
-				return true;
-			}
-			case "addmineable" : {
-				if(data.selectedMap == null) {
-					player.sendMessage("You have not selected a map. Use /selectmap <map-name> to select or create a map.");
-				} else {
-					SGMap map = maps.get(data.selectedMap);
-					Block block = player.getTargetBlock((Set<Material>) null, 100);
-					map.mineables = addToArray(map.mineables, new SGMineable(block));
-					player.sendMessage(block.getType() + " at " + block.getLocation() + " has been successfully added to map " + data.selectedMap + ".");
 				}
 				return true;
 			}
