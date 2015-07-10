@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Random;
 
 import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.inventory.Inventory;
@@ -34,7 +33,6 @@ public class SGChest extends SGBlock {
 	@Override
 	public void load() {
 		Block block = location.toLocation().getBlock();
-		block.setType(Material.CHEST);
 		Inventory inventory = ((Chest) block.getState()).getBlockInventory();
 		inventory.clear();
 		List<SGItem> items = getAppropriateItems();

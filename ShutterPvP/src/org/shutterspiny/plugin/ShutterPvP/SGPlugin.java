@@ -175,9 +175,8 @@ public class SGPlugin extends JavaPlugin {
 					player.sendMessage("You have not selected a map. Use /selectmap <map-name> to select or create a map.");
 				} else {
 					SGMap map = maps.get(data.selectedMap);
-					Location loc = player.getLocation().getBlock().getLocation();
+					Location loc = player.getTargetBlock((Set<Material>) null, 100).getLocation();
 					double rarity = Double.parseDouble(args[0]);
-					loc.getBlock().setType(Material.CHEST);
 					map.chests = addToArray(map.chests, new SGChest(loc, rarity));
 					player.sendMessage("Chest at " + loc + " with rarity " + rarity + " has been successfully added to map " + data.selectedMap);
 				}
