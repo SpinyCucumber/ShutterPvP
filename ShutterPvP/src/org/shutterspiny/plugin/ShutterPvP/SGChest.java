@@ -78,8 +78,6 @@ public class SGChest {
 			} else if(d == dist) closest.add(item);
 		}
 		SGItem item = closest.get(closest.size() == 1 ? 0 : random.nextInt(closest.size()));
-		System.out.println(item.type + " " + rarity);
-		for(SGItem i : closest) System.out.println(i.type);
 		return item;
 	}
 	
