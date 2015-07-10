@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -35,6 +36,7 @@ public class SGGame implements Listener {
 	public void start() throws SGGameException {
 		if(mapName == null) throw new SGGameException("Must select map first.");
 		if(players.size() < 2) throw new SGGameException("Must have more than two players.");
+		for(Player player : players) player.setGameMode(GameMode.SURVIVAL);
 		SGMap map = pluginInstance.getMaps().get(mapName);
 		map.load();
 		final Set<BukkitRunnable> runnables = new HashSet<BukkitRunnable>();
@@ -66,6 +68,7 @@ public class SGGame implements Listener {
 	public void end() {
 		broadcast("The game has ended.");
 		started = false;
+		for(Player player : players) player.getInventory().clear();
 		players.clear();
 	}
 	
