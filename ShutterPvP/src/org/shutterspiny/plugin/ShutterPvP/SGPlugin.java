@@ -62,6 +62,7 @@ public class SGPlugin extends JavaPlugin {
 			final File folder = this.getDataFolder(), libs = new File(folder, "lib");
 			final JarFile jar = JarUtils.getRunningJar();
 			libs.mkdirs();
+			this.saveDefaultConfig();
 			
 			//local classes help with code repetition
 			abstract class APILoader {
@@ -184,7 +185,8 @@ public class SGPlugin extends JavaPlugin {
 			case "additem" : {
 				ItemStack item = player.getItemInHand();
 				SGItem sgItem = new SGItem(item, Double.parseDouble(args[0]),
-						Integer.parseInt(args[1]), Integer.parseInt(args[2]));
+						Integer.parseInt(args[1]), Integer.parseInt(args[2]),
+						Integer.parseInt(args[3]), Integer.parseInt(args[4]));
 				items = addToArray(items, sgItem);
 				player.sendMessage(item.getType() + " has been successfully added.");
 				return true;

@@ -20,8 +20,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class SGGame implements Listener {
 	
-	private static final int COUNTDOWN = 4;
-	
 	private SGPlugin pluginInstance;
 	public String mapName;
 	private List<Player> players;
@@ -62,6 +60,7 @@ public class SGGame implements Listener {
 		if(mapName == null) throw new SGGameException("Must select map first.");
 		for(Player player : players) player.setGameMode(GameMode.SURVIVAL);
 		SGMap map = getMap();
+		map.load();
 		final Set<BukkitRunnable> runnables = new HashSet<BukkitRunnable>();
 		for(int i = 0; i < players.size(); i++) {
 			int i1 = i % map.spawnPoints.length;
@@ -74,15 +73,16 @@ public class SGGame implements Listener {
 			runnable.runTaskTimer(pluginInstance, 0, 1);
 		}
 		new BukkitRunnable() {
-			int countdown = COUNTDOWN;
+			int countdown = pluginInstance.getConfig().getInt("Countdown");
 			public void run() {
+				broadcast(countdown + " seconds until the games begin...");
 				countdown--;
 				if(countdown == 0) {
 					this.cancel();
 					started = true;
 					broadcast("THE GAMES HAVE BEGUN!");
 					for(BukkitRunnable runnable : runnables) runnable.cancel();
-				} else broadcast(countdown + " until the games begin...");
+				}
 			}
 		}.runTaskTimer(pluginInstance, 0, 20);
 	}
@@ -95,8 +95,6 @@ public class SGGame implements Listener {
 		broadcast("The game has ended.");
 		started = false;
 		for(Player player : players) player.getInventory().clear();
-		SGMap map = getMap();
-		map.load();
 		for(SGBlock block : blocks) block.load();
 		blocks.clear();
 		players.clear();
@@ -124,7 +122,7 @@ public class SGGame implements Listener {
 		SGMap map = pluginInstance.getMaps().get(mapName);
 		Block block = event.getBlock();
 		if(map.isMineable(block.getType())) blocks.add(new SGBlock(block));
-		else event.setCancelled(true);
+		else if(!map.isPlaceable(block.getType())) event.setCancelled(true);
 	}
 	
 	@EventHandler
