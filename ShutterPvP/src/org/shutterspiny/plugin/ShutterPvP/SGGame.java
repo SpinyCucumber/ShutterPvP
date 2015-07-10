@@ -10,17 +10,31 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class SGGame implements Listener {
 	
 	private SGPlugin pluginInstance;
-	private String mapName;
+	public String mapName;
 	private List<Player> players;
 	private boolean started;
 	
-	public void start() {
+	public class SGGameException extends Exception {
+
+		private static final long serialVersionUID = 1L;
+
+		public SGGameException(String message) {
+			super(message);
+		}
+		
+	}
+	
+	public void start() throws SGGameException {
+		if(mapName == null) throw new SGGameException("Must select map first.");
+		if(players.size() < 2) throw new SGGameException("Must have more than two players.");
 		SGMap map = pluginInstance.getMaps().get(mapName);
 		map.load();
 		final Set<BukkitRunnable> runnables = new HashSet<BukkitRunnable>();
@@ -61,17 +75,41 @@ public class SGGame implements Listener {
 		Player player = event.getEntity();
 		if(!players.contains(player)) return;
 		broadcast(player.getName() + " has died!");
-		players.remove(player);
-		if(players.size() == 1) {
-			Player winner = players.get(0);
+		List<Player> playersClone = new ArrayList<Player>(players);
+		playersClone.remove(player);
+		if(playersClone.size() == 1) {
+			Player winner = playersClone.get(0);
 			broadcast(winner.getName() + " has won!");
 			end();
+		} else players = playersClone;
+	}
+	
+	@EventHandler
+	public void onBlockBreak(BlockBreakEvent event) {
+		Player player = event.getPlayer();
+		if(!players.contains(player)) return;
+		SGMap map = pluginInstance.getMaps().get(mapName);
+		Location loc = event.getBlock().getLocation();
+		for(SGMineable mineable : map.mineables) {
+			if(mineable.location.toLocation().equals(loc)) return;
 		}
+		event.setCancelled(true);
+	}
+	
+	@EventHandler
+	public void onBlockPlace(BlockPlaceEvent event) {
+		Player player = event.getPlayer();
+		if(players.contains(player)) event.setCancelled(true);
 	}
 	
 	public void join(Player player) {
 		players.add(player);
 		broadcast(player.getName() + " has joined the game!");
+	}
+	
+	public void leave(Player player) {
+		players.remove(player);
+		broadcast(player.getName() + " has left the game.");
 	}
 	
 	public void broadcast(String message) {

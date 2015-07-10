@@ -17,6 +17,7 @@ import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.shutterspiny.lib.PluginUtils.AdvancedMap;
 import org.shutterspiny.lib.PluginUtils.Factory;
@@ -25,6 +26,7 @@ import org.shutterspiny.lib.PluginUtils.JSONObjectFile;
 import org.shutterspiny.lib.PluginUtils.MapBuilder;
 import org.shutterspiny.lib.PluginUtils.MapNode;
 import org.shutterspiny.lib.PluginUtils.ParentNode;
+import org.shutterspiny.plugin.ShutterPvP.SGGame.SGGameException;
 
 //Temporary
 public class SGPlugin extends JavaPlugin {
@@ -91,11 +93,6 @@ public class SGPlugin extends JavaPlugin {
 			try {
 				
 				log(Level.INFO, "Loading data...");
-				playerData = new AdvancedMap<UUID, SGPlayerData>(new Factory<SGPlayerData>(){
-					public SGPlayerData create() {
-						return new SGPlayerData();
-					}
-				});
 				Map<String, Object> files = node.load(folder);
 				maps = (Map<String, SGMap>) files.get("maps");
 				items = (SGItem[]) files.get("items.json");
@@ -145,10 +142,6 @@ public class SGPlugin extends JavaPlugin {
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		if(!(sender instanceof Player)) return false;
 		Player player = (Player) sender;
-		if(!player.hasPermission("ShutterPvP.maps")) {
-			player.sendMessage("You do not have permission to use this command.");
-			return false;
-		}
 		SGPlayerData data = playerData.get(player.getUniqueId());
 		switch(command.getName()) {
 			case "selectmap" : {
@@ -201,6 +194,14 @@ public class SGPlugin extends JavaPlugin {
 				}
 				return true;
 			}
+			case "additem" : {
+				ItemStack item = player.getItemInHand();
+				SGItem sgItem = new SGItem(item, Double.parseDouble(args[0]),
+						Integer.parseInt(args[1]), Integer.parseInt(args[2]));
+				items = addToArray(items, sgItem);
+				player.sendMessage(item.getType() + " has been successfully added.");
+				return true;
+			}
 			case "sgsave" : {
 				save();
 				return true;
@@ -213,6 +214,31 @@ public class SGPlugin extends JavaPlugin {
 				for(String name : maps.keySet()) player.sendMessage(name);
 				return true;
 			}
+			case "sgstart" : {
+				try {
+					game.start();
+				} catch (SGGameException e) {
+					player.sendMessage(e.getMessage());
+				}
+				return true;
+			}
+			case "sgsetmap" : {
+				game.mapName = args[0];
+				player.sendMessage("Game map has been set to " + args[0] + ".");
+				return true;
+			}
+			case "sgjoin" : {
+				game.join(player);
+				return true;
+			}
+			case "sgstop" : {
+				game.end();
+				return true;
+			}
+			case "sgleave" : {
+				game.leave(player);
+				return true;
+			}
 		}
 		return false;
 	}
@@ -220,6 +246,13 @@ public class SGPlugin extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		load();
+		playerData = new AdvancedMap<UUID, SGPlayerData>(new Factory<SGPlayerData>(){
+			public SGPlayerData create() {
+				return new SGPlayerData();
+			}
+		});
+		game = new SGGame(this, null);
+		SGChest.pluginInstance = this;
 	}
 	
 	@Override

@@ -12,45 +12,23 @@ public class SGItem {
 	
 	private static Random random = new Random();
 	
-	private double rarity;
-	private Material type;
-	private int count, minDamage, maxDamage;
-	private String name;
-	
-	public int getMinDamage() {
-		return minDamage;
-	}
-
-	public int getMaxDamage() {
-		return maxDamage;
-	}
-
-	public double getRarity() {
-		return rarity;
-	}
-	
-	public Material getType() {
-		return type;
-	}
-	
-	public int getCount() {
-		return count;
-	}
-	
-	public String getName() {
-		return name;
-	}
+	public double rarity;
+	public String type;
+	public int count, minDamage, maxDamage;
+	public String name;
 	
 	public ItemStack toItemStack() {
-		short damage = (short) (random.nextInt(maxDamage - minDamage) + minDamage);
-		ItemStack item = new ItemStack(type, count, damage);
+		short damage = (short) (random.nextInt(maxDamage - minDamage + 1) + minDamage);
+		ItemStack item = new ItemStack(Material.valueOf(type), count, damage);
 		ItemMeta meta = item.getItemMeta();
 		if(name != null) meta.setDisplayName(name);
 		item.setItemMeta(meta);
 		return item;
 	}
+	
+	public SGItem() {}
 
-	public SGItem(double rarity, Material type, int count, int minDamage,
+	public SGItem(double rarity, String type, int count, int minDamage,
 			int maxDamage, String name) {
 		this.rarity = rarity;
 		this.type = type;
@@ -58,6 +36,11 @@ public class SGItem {
 		this.minDamage = minDamage;
 		this.maxDamage = maxDamage;
 		this.name = name;
+	}
+	
+	public SGItem(ItemStack stack, double rarity, int minDamage, int maxDamage) {
+		this(rarity, stack.getType().name(), stack.getAmount(), minDamage, maxDamage,
+				stack.getItemMeta() == null ? null : stack.getItemMeta().getDisplayName());
 	}
 	
 	//Debug junk

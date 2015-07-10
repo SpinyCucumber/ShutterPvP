@@ -14,12 +14,26 @@ commands:
   addspawnpoint:
     description: Adds a spawnpoint at the block you're standing in.
     usage: /spawnpoint
+  additem:
+    desciption: Adds a SGItem constructed from the item in your hand.
+    usage: /additem <rarity> <min-damage> <max-damage>
   sgsave:
     description: Saves maps.
   sgload:
     description: Loads maps.
   listmaps:
     description: Lists maps.
+  sgstart:
+    description: Starts the game.
+  sgsetmap:
+    description: Sets the game's map.
+    usage: /sgsetmap <map-name>
+  sgjoin:
+    description: Joins the game.
+  sgstop:
+    description: Stops the game.
+  sgleave:
+    description: Leaves the game.
 permissions:
   ShutterPvP.maps:
     desciption: Gives access to all SG map-editing commands. Ops have this permission by default.
