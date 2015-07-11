@@ -2,29 +2,33 @@ name: ShutterPvP
 main: org.shutterspiny.plugin.ShutterPvP.SGPlugin
 version: 0.7
 commands:
-  selectmap:
+  sgselectmap:
     description: Selects a SG map for editing. Creates new map if necessary.
     usage: /selectmap <map-name> or /selectmap to deselect map
-  addmineable:
-    desciption: Makes the block you're looking at mineable during SG games on the selected map.
-    usage: /addmineable
-  addchest:
+  sgaddchest:
     desciption: Adds a chest at the block you're standing in. Rarity argument represents how hard the chest is to get to.
     usage: /addchest <rarity>
-  addspawnpoint:
+  sgaddspawnpoint:
     description: Adds a spawnpoint at the block you're standing in.
     usage: /spawnpoint
-  additem:
-    desciption: Adds a SGItem constructed from the item in your hand.
+  sgadditem:
+    description: Adds a SGItem constructed from the item in your hand.
+    usage: /additem <rarity> <min-count> <max-count>
+  sgadditemdamaged:
+    description: Adds a SGItem with a sepecified random damage value range.
     usage: /additem <rarity> <min-count> <max-count> <min-damage> <max-damage>
-  addentity:
+  sgaddmineable:
+    description: Makes the type of block your looking at mineable when playing on the selected map.
+  sgaddplaceable:
+    description: Makes the type of block your looking at placeable when playing on the selected map.
+  sgaddentity:
     description: Adds a SGEntity to the currently selected map.
     usage: /addentity <type>
   sgsave:
     description: Saves maps.
   sgload:
     description: Loads maps.
-  listmaps:
+  sglistmaps:
     description: Lists maps.
   sgstart:
     description: Starts the game.

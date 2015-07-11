@@ -122,14 +122,7 @@ public class SGGame implements Listener {
 		Player player = event.getEntity();
 		if(!players.contains(player)) return;
 		broadcast(player.getName() + " has died!");
-		List<Player> playersClone = new ArrayList<Player>(players);
-		playersClone.remove(player);
-		if(playersClone.size() == 1) {
-			Player winner = playersClone.get(0);
-			broadcast(winner.getName() + " has won!");
-			event.getDrops().clear();
-			try { end(); } catch (SGGameException e) {}
-		} else players = playersClone;
+		if(removePlayer(player)) event.getDrops().clear();
 	}
 	
 	@EventHandler
@@ -170,8 +163,21 @@ public class SGGame implements Listener {
 	}
 	
 	public void leave(Player player) throws SGGameException {
-		if(!players.remove(player)) throw new SGGameException("You are not in the game.");
+		if(!players.contains(player)) throw new SGGameException("You are not in the game.");
 		broadcast(player.getName() + " has left the game.");
+		removePlayer(player);
+	}
+	
+	private boolean removePlayer(Player player) {
+		List<Player> playersClone = new ArrayList<Player>(players);
+		playersClone.remove(player);
+		boolean oneLeft = playersClone.size() == 1;
+		if(oneLeft) {
+			Player winner = playersClone.get(0);
+			broadcast(winner.getName() + " has won!");
+			try { end(); } catch (SGGameException e) {}
+		} else players = playersClone;
+		return oneLeft;
 	}
 	
 	public void broadcast(String message) {

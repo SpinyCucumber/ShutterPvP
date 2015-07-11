@@ -68,4 +68,9 @@ public class SGItem {
 		
 	}
 	
+	public static SGItem fromItemStackDamaged(ItemStack stack, double rarity, int minCount, int maxCount) {
+		int damage = (int) stack.getDurability();
+		return fromItemStack(stack, rarity, minCount, maxCount, damage, damage);
+	}
+	
 }

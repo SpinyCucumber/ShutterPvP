@@ -12,6 +12,7 @@ import java.util.logging.Level;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -28,6 +29,8 @@ import org.shutterspiny.plugin.ShutterPvP.SGGame.SGGameException;
 
 //Temporary
 public class SGPlugin extends JavaPlugin {
+	
+	private static final int TARGET_RANGE = 100;
 	
 	private Map<String, SGMap> maps;
 	private Map<UUID, SGPlayerData> playerData;
@@ -132,7 +135,7 @@ public class SGPlugin extends JavaPlugin {
 		Player player = (Player) sender;
 		SGPlayerData data = playerData.get(player.getUniqueId());
 		switch(command.getName()) {
-			case "selectmap" : {
+			case "sgselectmap" : {
 				if(args.length == 0) {
 					data.selectedMap = null;
 					player.sendMessage("You have deselected your map.");
@@ -147,19 +150,19 @@ public class SGPlugin extends JavaPlugin {
 				}
 				return true;
 			}
-			case "addchest" : {
+			case "sgaddchest" : {
 				if(data.selectedMap == null) {
 					player.sendMessage("You have not selected a map. Use /selectmap <map-name> to select or create a map.");
 				} else {
 					SGMap map = maps.get(data.selectedMap);
-					Location loc = player.getTargetBlock((Set<Material>) null, 100).getLocation();
+					Location loc = player.getTargetBlock((Set<Material>) null, TARGET_RANGE).getLocation();
 					double rarity = Double.parseDouble(args[0]);
 					map.chests = addToArray(map.chests, new SGChest(loc, rarity));
 					player.sendMessage("Chest at " + loc + " with rarity " + rarity + " has been successfully added to map " + data.selectedMap);
 				}
 				return true;
 			}
-			case "addspawnpoint" : {
+			case "sgaddspawnpoint" : {
 				if(data.selectedMap == null) {
 					player.sendMessage("You have not selected a map. Use /selectmap <map-name> to select or create a map.");
 				} else {
@@ -170,7 +173,7 @@ public class SGPlugin extends JavaPlugin {
 				}
 				return true;
 			}
-			case "additem" : {
+			case "sgadditem" : {
 				ItemStack item = player.getItemInHand();
 				SGItem sgItem = SGItem.fromItemStack(item, Double.parseDouble(args[0]),
 						Integer.parseInt(args[1]), Integer.parseInt(args[2]),
@@ -179,7 +182,15 @@ public class SGPlugin extends JavaPlugin {
 				player.sendMessage(item.getType() + " has been successfully added.");
 				return true;
 			}
-			case "addentity" : {
+			case "sgadditemdamaged" : {
+				ItemStack item = player.getItemInHand();
+				SGItem sgItem = SGItem.fromItemStackDamaged(item, Double.parseDouble(args[0]),
+						Integer.parseInt(args[1]), Integer.parseInt(args[2]));
+				items = addToArray(items, sgItem);
+				player.sendMessage(item.getType() + " has been successfully added.");
+				return true;
+			}
+			case "sgaddentity" : {
 				if(data.selectedMap == null) {
 					player.sendMessage("You have not selected a map. Use /selectmap <map-name> to select or create a map.");
 				} else {
@@ -187,6 +198,24 @@ public class SGPlugin extends JavaPlugin {
 					Location loc = player.getLocation();
 					map.entities = addToArray(map.entities, new SGEntity(args[0], new SLocation(loc)));
 					player.sendMessage(args[0] + " at " + loc + " has been successfully added to map " + data.selectedMap);
+				}
+				return true;
+			}
+			case "sgaddmineable" : {
+				if(data.selectedMap == null) { player.sendMessage("You have not selected a map. Use /selectmap <map-name> to select or create a map."); } else {
+					SGMap map = maps.get(data.selectedMap);
+					Block block = player.getTargetBlock((Set<Material>) null, TARGET_RANGE);
+					map.mineables = addToArray(map.mineables, new SGBlockType(block));
+					player.sendMessage(block.getType() + " has become mineable on map " + data.selectedMap);
+				}
+				return true;
+			}
+			case "sgaddplaceable" : {
+				if(data.selectedMap == null) { player.sendMessage("You have not selected a map. Use /selectmap <map-name> to select or create a map."); } else {
+					SGMap map = maps.get(data.selectedMap);
+					Block block = player.getTargetBlock((Set<Material>) null, TARGET_RANGE);
+					map.placeables = addToArray(map.placeables, new SGBlockType(block));
+					player.sendMessage(block.getType() + " has become placeable on map " + data.selectedMap);
 				}
 				return true;
 			}
@@ -210,8 +239,9 @@ public class SGPlugin extends JavaPlugin {
 				}
 				return true;
 			}
-			case "listmaps" : {
-				for(String name : maps.keySet()) player.sendMessage(name);
+			case "sglistmaps" : {
+				if(maps.size() == 0) player.sendMessage("There are no loaded maps.");
+				else for(String name : maps.keySet()) player.sendMessage(name);
 				return true;
 			}
 			case "sgstart" : {
