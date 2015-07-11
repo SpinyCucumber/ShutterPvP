@@ -1,5 +1,6 @@
 package org.shutterspiny.plugin.ShutterPvP;
 
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 
 public class SGBlockType {
@@ -18,6 +19,12 @@ public class SGBlockType {
 	public SGBlockType(Block block) {
 		this.type = block.getType().name();
 		this.damage = (int) block.getData();
+	}
+	
+	@SuppressWarnings("deprecation")
+	public void set(Block block) {
+		block.setType(Material.valueOf(type));
+		block.setData((byte) damage);
 	}
 	
 	@Override

@@ -257,7 +257,7 @@ public class SGPlugin extends JavaPlugin {
 				return true;
 			}
 			case "sgsetmap" : {
-				game.mapName = args[0];
+				game.setMap(args[0]);
 				player.sendMessage("Game map has been set to " + args[0] + ".");
 				return true;
 			}
