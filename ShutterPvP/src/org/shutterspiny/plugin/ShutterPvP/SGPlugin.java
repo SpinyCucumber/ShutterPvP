@@ -192,6 +192,17 @@ public class SGPlugin extends JavaPlugin {
 				player.sendMessage(item.getType() + " has been successfully added.");
 				return true;
 			}
+			case "addentity" : {
+				if(data.selectedMap == null) {
+					player.sendMessage("You have not selected a map. Use /selectmap <map-name> to select or create a map.");
+				} else {
+					SGMap map = maps.get(data.selectedMap);
+					Location loc = player.getLocation();
+					map.entities = addToArray(map.entities, new SGEntity(args[0], new SLocation(loc)));
+					player.sendMessage("Spawnpoint at " + loc + " has been successfully added to map " + data.selectedMap);
+				}
+				return true;
+			}
 			case "sgsave" : {
 				save();
 				return true;
