@@ -63,6 +63,7 @@ public class SGGame implements Listener {
 	
 	public void start() throws SGGameException {
 		if(mapName == null) throw new SGGameException("Must select map first.");
+		if(started == true) throw new SGGameException("The game is already in progress.");
 		for(Player player : players) player.setGameMode(GameMode.SURVIVAL);
 		SGMap map = getMap();
 		for(SGChest chest : map.chests) chest.load();
@@ -102,7 +103,8 @@ public class SGGame implements Listener {
 		for(Player player : players) player.getInventory().clear();
 		for(SGBlock block : blocks) block.load();
 		for(Entity entity : spawnedEntities) if(entity.isValid()) entity.remove();
-		players.clear();
+		boolean playersLeave = pluginInstance.getConfig().getBoolean("PlayersLeave");
+		if(playersLeave) players.clear();
 		blocks.clear();
 		spawnedEntities.clear();
 	}
