@@ -137,6 +137,7 @@ public class SGGame implements Listener {
 	public void onExplode(EntityExplodeEvent event) {
 		if(!(event.getEntityType() == EntityType.PRIMED_TNT)) return;
 		TNTPrimed entity = (TNTPrimed) event.getEntity();
+		System.out.println(entity.getSource().getName());
 		if(!players.contains(entity.getSource())) return;
 		for(Block block : event.blockList()) blocks.add(new SGBlock(block));
 	}

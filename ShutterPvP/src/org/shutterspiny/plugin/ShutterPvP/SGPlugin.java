@@ -10,7 +10,6 @@ import java.util.UUID;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
@@ -54,83 +53,70 @@ public class SGPlugin extends JavaPlugin {
 
 	//Implementing WIP "PluginUtils" API, which includes a tree-like file loading system
 	@SuppressWarnings("unchecked")		
-	private void load() {
+	private void load() throws Exception {
+		
+		//Use plugin utils to load files
+		node = new ParentNode(new MapBuilder<String,FileNode<?>>()
+				.with("maps", new MapNode<SGMap>(new JSONObjectFile<SGMap>(SGMap.class), new Factory<Map<String,SGMap>>(){ public Map<String, SGMap> create() { return new HashMap<String, SGMap>();}}, ".json"))
+				.with("items.json", new JSONObjectFile<SGItem[]>(SGItem[].class))
+				.end());
 		
 		try {
 			
-			//Load apis
-			final File folder = this.getDataFolder(), libs = new File(folder, "lib");
-			final JarFile jar = JarUtils.getRunningJar();
-			libs.mkdirs();
-			this.saveDefaultConfig();
+			log(Level.INFO, "Loading data...");
+			this.reloadConfig();
+			Map<String, Object> files = node.load(this.getDataFolder());
+			maps = (Map<String, SGMap>) files.get("maps");
+			items = (SGItem[]) files.get("items.json");
+			log(Level.INFO, "Successfully loaded data.");
 			
-			//local classes help with code repetition
-			abstract class APILoader {
-				abstract void loadAPI(String path) throws IOException;
-			}
-			APILoader loader = new APILoader() {
-				void loadAPI(String path) throws IOException {
-					File f = new File(libs, path);
-					if(!f.exists()) {
-						JarUtils.extractResource(jar, path, f);
-						log(Level.INFO, "Successfully extracted " + path + " from jar.");
-					}
-					JarUtils.addClassPath(f);
-					log(Level.INFO, "Successfully loaded " + path + " from lib folder.");
-				}
-			};
+		} catch(IOException e) {
 			
-			log(Level.INFO, "Loading apis...");
-			loader.loadAPI("jackson-core-asl-1.9.13.jar");
-			loader.loadAPI("jackson-mapper-asl-1.9.13.jar");
-			
-			//Use plugin utils to load files
-			node = new ParentNode(new MapBuilder<String,FileNode<?>>()
-					.with("maps", new MapNode<SGMap>(new JSONObjectFile<SGMap>(SGMap.class), new Factory<Map<String,SGMap>>(){ public Map<String, SGMap> create() { return new HashMap<String, SGMap>();}}, ".json"))
-					.with("items.json", new JSONObjectFile<SGItem[]>(SGItem[].class))
-					.end());
-			
-			try {
-				
-				log(Level.INFO, "Loading data...");
-				this.reloadConfig();
-				Map<String, Object> files = node.load(folder);
-				maps = (Map<String, SGMap>) files.get("maps");
-				items = (SGItem[]) files.get("items.json");
-				log(Level.INFO, "Successfully loaded data.");
-				
-			} catch(IOException e) {
-				
-				log(Level.WARNING, "Data files either missing or corrupted. Using default data.");
-				e.printStackTrace();
-				maps = new HashMap<String, SGMap>();
-				items = new SGItem[0];
-			
-			}
-				
-		} catch(Exception e) {
-			
-			log(Level.SEVERE, "Fatal error! I hate it when this happens.");
-			disable();
-			e.printStackTrace();
-			
+			log(Level.WARNING, "Data files either missing or corrupted. Using default data.");
+			maps = new HashMap<String, SGMap>();
+			items = new SGItem[0];
+			save();
+		
 		}
 		
 	}
 	
-	private void save() {
+	private void loadAPIs() throws IOException {
+		
+		final File libs = new File(this.getDataFolder(), "lib");
+		final JarFile jar = JarUtils.getRunningJar();
+		libs.mkdirs();
+		
+		//local classes help with code repetition
+		abstract class APILoader {
+			abstract void loadAPI(String path) throws IOException;
+		}
+		APILoader loader = new APILoader() {
+			void loadAPI(String path) throws IOException {
+				File f = new File(libs, path);
+				if(!f.exists()) {
+					JarUtils.extractResource(jar, path, f);
+					log(Level.INFO, "Successfully extracted " + path + " from jar.");
+				}
+				JarUtils.addClassPath(f);
+				log(Level.INFO, "Successfully loaded " + path + " from lib folder.");
+			}
+		};
+		
+		log(Level.INFO, "Loading apis...");
+		loader.loadAPI("jackson-core-asl-1.9.13.jar");
+		loader.loadAPI("jackson-mapper-asl-1.9.13.jar");
+		
+	}
+	
+	private void save() throws IOException {
 		
 		Map<String, Object> files = new HashMap<String, Object>();
 		files.put("maps", maps);
 		files.put("items.json", items);
 		
 		log(Level.INFO, "Saving data...");
-		try {
-			node.save(getDataFolder(), files);
-		} catch (IOException e) {
-			log(Level.SEVERE, "Error saving. Data may have been lost!");
-			e.printStackTrace();
-		}
+		node.save(getDataFolder(), files);
 		
 		log(Level.INFO, "Successfully saved data.");
 		
@@ -204,11 +190,23 @@ public class SGPlugin extends JavaPlugin {
 				return true;
 			}
 			case "sgsave" : {
-				save();
+				try {
+					save();
+					player.sendMessage("Data files successfully saved.");
+				} catch (IOException e) {
+					player.sendMessage("There was an error saving the data. Check the console.");
+					e.printStackTrace();
+				}
 				return true;
 			}
 			case "sgload" : {
-				load();
+				try {
+					load();
+					player.sendMessage("Data files successfully reloaded.");
+				} catch (Exception e) {
+					player.sendMessage("There was an error loading the data. Check the console.");
+					e.printStackTrace();
+				}
 				return true;
 			}
 			case "listmaps" : {
@@ -246,7 +244,13 @@ public class SGPlugin extends JavaPlugin {
 	
 	@Override
 	public void onEnable() {
-		load();
+		try {
+			load();
+			loadAPIs();
+		} catch (Exception e) {
+			log(Level.SEVERE, "Error loading! Default data could not be used!");
+			e.printStackTrace();
+		}
 		playerData = new AdvancedMap<UUID, SGPlayerData>(new Factory<SGPlayerData>(){
 			public SGPlayerData create() {
 				return new SGPlayerData();
@@ -258,12 +262,12 @@ public class SGPlugin extends JavaPlugin {
 	
 	@Override
 	public void onDisable() {
-		save();
-	}
-	
-	//For convenience
-	private void disable() {
-		Bukkit.getPluginManager().disablePlugin(this);
+		try {
+			save();
+		} catch (IOException e) {
+			log(Level.SEVERE, "Error loading. Data may have been lost!");
+			e.printStackTrace();
+		}
 	}
 	
 	private void log(Level level, String msg) {
