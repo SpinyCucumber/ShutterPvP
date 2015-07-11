@@ -10,6 +10,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
@@ -27,6 +28,7 @@ public class SGGame implements Listener {
 	public String mapName;
 	private List<Player> players;
 	private List<SGBlock> blocks;
+	private List<Entity> spawnedEntities;
 	private boolean started;
 	
 	private static class SGBlock {
@@ -63,7 +65,8 @@ public class SGGame implements Listener {
 		if(mapName == null) throw new SGGameException("Must select map first.");
 		for(Player player : players) player.setGameMode(GameMode.SURVIVAL);
 		SGMap map = getMap();
-		map.load();
+		for(SGChest chest : map.chests) chest.load();
+		for(SGEntity entity : map.entities) spawnedEntities.add(entity.spawn());
 		final Set<BukkitRunnable> runnables = new HashSet<BukkitRunnable>();
 		for(int i = 0; i < players.size(); i++) {
 			int i1 = i % map.spawnPoints.length;
@@ -98,8 +101,10 @@ public class SGGame implements Listener {
 		started = false;
 		for(Player player : players) player.getInventory().clear();
 		for(SGBlock block : blocks) block.load();
-		blocks.clear();
+		for(Entity entity : spawnedEntities) if(entity.isValid()) entity.remove();
 		players.clear();
+		blocks.clear();
+		spawnedEntities.clear();
 	}
 	
 	@EventHandler
@@ -165,6 +170,7 @@ public class SGGame implements Listener {
 		this.mapName = mapName;
 		players = new ArrayList<Player>();
 		blocks = new ArrayList<SGBlock>();
+		spawnedEntities = new ArrayList<Entity>();
 		Bukkit.getPluginManager().registerEvents(this, pluginInstance);
 	}
 	

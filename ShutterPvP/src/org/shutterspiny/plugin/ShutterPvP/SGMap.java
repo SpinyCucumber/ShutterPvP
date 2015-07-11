@@ -10,13 +10,15 @@ public class SGMap {
 	public SGBlockType[] placeables;
 	public SGChest[] chests;
 	public SLocation[] spawnPoints;
+	public SGEntity[] entities;
 	
 	public SGMap(SGBlockType[] mineables, SGBlockType[] placeables, SGChest[] chests,
-			SLocation[] spawnPoints) {
+			SLocation[] spawnPoints, SGEntity[] entities) {
 		this.mineables = mineables;
 		this.placeables = placeables;
 		this.chests = chests;
 		this.spawnPoints = spawnPoints;
+		this.entities = entities;
 	}
 
 	public SGMap() {
@@ -24,6 +26,7 @@ public class SGMap {
 		this.placeables = new SGBlockType[0];
 		this.chests = new SGChest[0];
 		this.spawnPoints = new SLocation[0];
+		this.entities = new SGEntity[0];
 	}
 	
 	public boolean isMineable(Block block) {
@@ -32,11 +35,6 @@ public class SGMap {
 	
 	public boolean isPlaceable(Block block) {
 		return Arrays.asList(placeables).contains(new SGBlockType(block));
-	}
-	
-	//Place blocks and randomize chests
-	public void load() {
-		for(SGChest chest : chests) chest.load();
 	}
 	
 }

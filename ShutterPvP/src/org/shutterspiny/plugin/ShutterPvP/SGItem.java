@@ -1,8 +1,13 @@
 package org.shutterspiny.plugin.ShutterPvP;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -14,6 +19,7 @@ public class SGItem {
 	public String type;
 	public int minCount, maxCount, minDamage, maxDamage;
 	public String name;
+	public SGEnchantment[] enchantments;
 	
 	public ItemStack toItemStack() {
 		short damage = (short) (random.nextInt(maxDamage - minDamage + 1) + minDamage);
@@ -21,6 +27,7 @@ public class SGItem {
 		ItemStack item = new ItemStack(Material.valueOf(type), count, damage);
 		ItemMeta meta = item.getItemMeta();
 		if(name != null) meta.setDisplayName(name);
+		for(SGEnchantment enchant : enchantments) enchant.apply(meta);
 		item.setItemMeta(meta);
 		return item;
 	}
@@ -28,7 +35,7 @@ public class SGItem {
 	public SGItem() {}
 
 	public SGItem(double rarity, String type, int minCount, int maxCount, int minDamage,
-			int maxDamage, String name) {
+			int maxDamage, String name, SGEnchantment[] enchantments) {
 		this.rarity = rarity;
 		this.type = type;
 		this.minCount = minCount;
@@ -36,11 +43,20 @@ public class SGItem {
 		this.minDamage = minDamage;
 		this.maxDamage = maxDamage;
 		this.name = name;
+		this.enchantments = enchantments;
 	}
 	
-	public SGItem(ItemStack stack, double rarity, int minCount, int maxCount, int minDamage, int maxDamage) {
-		this(rarity, stack.getType().name(), minCount, maxCount, minDamage, maxDamage,
-				stack.getItemMeta() == null ? null : stack.getItemMeta().getDisplayName());
+	public static SGItem fromItemStack(ItemStack stack, double rarity, int minCount, int maxCount,
+			int minDamage, int maxDamage) {
+		ItemMeta meta = stack.getItemMeta();
+		Map<Enchantment, Integer> enchantMap = meta.getEnchants();
+		List<SGEnchantment> enchantList = new ArrayList<SGEnchantment>();
+		for(Entry<Enchantment, Integer> entry : enchantMap.entrySet())
+			enchantList.add(new SGEnchantment(entry.getKey().getName(), entry.getValue()));
+		SGEnchantment[] enchants = enchantList.toArray(new SGEnchantment[enchantList.size()]);
+		String name = meta.getDisplayName();
+		String type = stack.getType().name();
+		return new SGItem(rarity, type, minCount, maxCount, minDamage, maxDamage, name, enchants);
 	}
 	
 }

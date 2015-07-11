@@ -185,7 +185,7 @@ public class SGPlugin extends JavaPlugin {
 			}
 			case "additem" : {
 				ItemStack item = player.getItemInHand();
-				SGItem sgItem = new SGItem(item, Double.parseDouble(args[0]),
+				SGItem sgItem = SGItem.fromItemStack(item, Double.parseDouble(args[0]),
 						Integer.parseInt(args[1]), Integer.parseInt(args[2]),
 						Integer.parseInt(args[3]), Integer.parseInt(args[4]));
 				items = addToArray(items, sgItem);
