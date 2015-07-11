@@ -20,6 +20,8 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class SGGame implements Listener {
@@ -97,10 +99,15 @@ public class SGGame implements Listener {
 		return pluginInstance.getMaps().get(mapName);
 	}
 	
-	public void end() {
+	public void end() throws SGGameException {
+		if(!started) throw new SGGameException("The game has not yet started.");
 		broadcast("The game has ended.");
 		started = false;
-		for(Player player : players) player.getInventory().clear();
+		for(Player player : players) {
+			PlayerInventory inventory = player.getInventory();
+			inventory.clear();
+			inventory.setArmorContents(new ItemStack[]{null, null, null, null});
+		}
 		for(SGBlock block : blocks) block.load();
 		for(Entity entity : spawnedEntities) if(entity.isValid()) entity.remove();
 		boolean playersLeave = pluginInstance.getConfig().getBoolean("PlayersLeave");
@@ -121,12 +128,13 @@ public class SGGame implements Listener {
 			Player winner = playersClone.get(0);
 			broadcast(winner.getName() + " has won!");
 			event.getDrops().clear();
-			end();
+			try { end(); } catch (SGGameException e) {}
 		} else players = playersClone;
 	}
 	
 	@EventHandler
 	public void onBlockBreak(BlockBreakEvent event) {
+		if(!started) return;
 		Player player = event.getPlayer();
 		if(!players.contains(player)) return;
 		SGMap map = pluginInstance.getMaps().get(mapName);
@@ -137,7 +145,7 @@ public class SGGame implements Listener {
 	
 	@EventHandler
 	public void onExplode(EntityExplodeEvent event) {
-		if(!(event.getEntityType() == EntityType.PRIMED_TNT)) return;
+		if(!(event.getEntityType() == EntityType.PRIMED_TNT) || !started) return;
 		TNTPrimed entity = (TNTPrimed) event.getEntity();
 		System.out.println(entity.getSource().getName());
 		if(!players.contains(entity.getSource())) return;
@@ -146,6 +154,7 @@ public class SGGame implements Listener {
 	
 	@EventHandler
 	public void onBlockPlace(BlockPlaceEvent event) {
+		if(!started) return;
 		Player player = event.getPlayer();
 		if(!players.contains(player)) return;
 		SGMap map = pluginInstance.getMaps().get(mapName);
@@ -154,13 +163,14 @@ public class SGGame implements Listener {
 		else event.setCancelled(true);
 	}
 	
-	public void join(Player player) {
+	public void join(Player player) throws SGGameException {
+		if(players.contains(player)) throw new SGGameException("You are already in the game.");
 		players.add(player);
 		broadcast(player.getName() + " has joined the game!");
 	}
 	
-	public void leave(Player player) {
-		players.remove(player);
+	public void leave(Player player) throws SGGameException {
+		if(!players.remove(player)) throw new SGGameException("You are not in the game.");
 		broadcast(player.getName() + " has left the game.");
 	}
 	

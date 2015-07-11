@@ -64,6 +64,7 @@ public class SGPlugin extends JavaPlugin {
 		try {
 			
 			log(Level.INFO, "Loading data...");
+			this.saveDefaultConfig();
 			this.reloadConfig();
 			Map<String, Object> files = node.load(this.getDataFolder());
 			maps = (Map<String, SGMap>) files.get("maps");
@@ -227,15 +228,27 @@ public class SGPlugin extends JavaPlugin {
 				return true;
 			}
 			case "sgjoin" : {
-				game.join(player);
+				try {
+					game.join(player);
+				} catch (SGGameException e) {
+					player.sendMessage(e.getMessage());
+				}
 				return true;
 			}
 			case "sgstop" : {
-				game.end();
+				try {
+					game.end();
+				} catch (SGGameException e) {
+					player.sendMessage(e.getMessage());
+				}
 				return true;
 			}
 			case "sgleave" : {
-				game.leave(player);
+				try {
+					game.leave(player);
+				} catch (SGGameException e) {
+					player.sendMessage(e.getMessage());
+				}
 				return true;
 			}
 		}
