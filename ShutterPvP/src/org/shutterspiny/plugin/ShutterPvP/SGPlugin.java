@@ -10,9 +10,9 @@ import java.util.UUID;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -31,6 +31,8 @@ import org.shutterspiny.plugin.ShutterPvP.SGGame.SGGameException;
 public class SGPlugin extends JavaPlugin {
 	
 	private static final int TARGET_RANGE = 100;
+	public static final String TAG = ChatColor.GOLD + "[" + ChatColor.YELLOW
+			+ "" + ChatColor.BOLD + "SG" + ChatColor.GOLD + "] " + ChatColor.RESET;
 	
 	private Map<String, SGMap> maps;
 	private Map<UUID, SGPlayerData> playerData;
@@ -179,7 +181,7 @@ public class SGPlugin extends JavaPlugin {
 						Integer.parseInt(args[1]), Integer.parseInt(args[2]),
 						Integer.parseInt(args[3]), Integer.parseInt(args[4]));
 				items = addToArray(items, sgItem);
-				player.sendMessage(item.getType() + " has been successfully added.");
+				player.sendMessage(sgItem.type + " has been successfully added.");
 				return true;
 			}
 			case "sgadditemdamaged" : {
@@ -187,7 +189,7 @@ public class SGPlugin extends JavaPlugin {
 				SGItem sgItem = SGItem.fromItemStackDamaged(item, Double.parseDouble(args[0]),
 						Integer.parseInt(args[1]), Integer.parseInt(args[2]));
 				items = addToArray(items, sgItem);
-				player.sendMessage(item.getType() + " has been successfully added.");
+				player.sendMessage(sgItem.type + " has been successfully added.");
 				return true;
 			}
 			case "sgaddentity" : {
@@ -195,27 +197,29 @@ public class SGPlugin extends JavaPlugin {
 					player.sendMessage("You have not selected a map. Use /selectmap <map-name> to select or create a map.");
 				} else {
 					SGMap map = maps.get(data.selectedMap);
-					Location loc = player.getLocation();
-					map.entities = addToArray(map.entities, new SGEntity(args[0], new SLocation(loc)));
-					player.sendMessage(args[0] + " at " + loc + " has been successfully added to map " + data.selectedMap);
+					SGEntity entity = new SGEntity(args[0], new SLocation(player.getLocation()));
+					map.entities = addToArray(map.entities, entity);
+					player.sendMessage(entity.type + " has been successfully added to map " + data.selectedMap);
 				}
 				return true;
 			}
 			case "sgaddmineable" : {
 				if(data.selectedMap == null) { player.sendMessage("You have not selected a map. Use /selectmap <map-name> to select or create a map."); } else {
 					SGMap map = maps.get(data.selectedMap);
-					Block block = player.getTargetBlock((Set<Material>) null, TARGET_RANGE);
-					map.mineables = addToArray(map.mineables, new SGBlockType(block));
-					player.sendMessage(block.getType() + " has become mineable on map " + data.selectedMap);
+					SGBlockType block = args.length == 0 ? new SGBlockType(player.getTargetBlock((Set<Material>) null, TARGET_RANGE))
+					: new SGBlockType(args[0], -1);
+					map.mineables = addToArray(map.mineables, block);
+					player.sendMessage(block.type + " has become mineable on map " + data.selectedMap);
 				}
 				return true;
 			}
 			case "sgaddplaceable" : {
 				if(data.selectedMap == null) { player.sendMessage("You have not selected a map. Use /selectmap <map-name> to select or create a map."); } else {
 					SGMap map = maps.get(data.selectedMap);
-					Block block = player.getTargetBlock((Set<Material>) null, TARGET_RANGE);
-					map.placeables = addToArray(map.placeables, new SGBlockType(block));
-					player.sendMessage(block.getType() + " has become placeable on map " + data.selectedMap);
+					SGBlockType block = args.length == 0 ? new SGBlockType(player.getTargetBlock((Set<Material>) null, TARGET_RANGE))
+					: new SGBlockType(args[0], -1);
+					map.placeables = addToArray(map.placeables, block);
+					player.sendMessage(block.type + " has become placeable on map " + data.selectedMap);
 				}
 				return true;
 			}
@@ -288,8 +292,8 @@ public class SGPlugin extends JavaPlugin {
 	@Override
 	public void onEnable() {
 		try {
-			load();
 			loadAPIs();
+			load();
 		} catch (Exception e) {
 			log(Level.SEVERE, "Error loading! Default data could not be used!");
 			e.printStackTrace();

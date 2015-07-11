@@ -16,6 +16,7 @@ public class SGChest {
 
 	private final static int MAX_SLOT = 27;
 	
+	//Sadly, with JSON, there is no way to pass down an instance of SGPlugin to each chest.
 	public static SGPlugin pluginInstance;
 	private static Random random;
 	private static List<Integer> slots;

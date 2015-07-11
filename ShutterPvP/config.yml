@@ -1,5 +1,7 @@
-Countdown: 5 #The number of seconds players wait until being unfrozen.
+Countdown: 10 #The number of seconds players wait until being unfrozen.
 MinItems: 3 #The minimum number of items found in a chest.
 MaxItems: 10 #The maximum number of items found in a chest.
 RarityVariance: 0.2 #The standard deviation of the gaussian function used to modify a chests rarity when being filled with items.
 PlayersLeave: false #If players leave the game once it has ended.
+Seconds: 4 #When the countdown timer starts displaying individual seconds
+Factor: 5 #Displays number if time is multiple of number

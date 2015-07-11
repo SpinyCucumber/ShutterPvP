@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -53,12 +54,12 @@ public class SGGame implements Listener {
 		
 	}
 	
-	public static class SGGameException extends Exception {
+	public class SGGameException extends Exception {
 
 		private static final long serialVersionUID = 1L;
 
 		public SGGameException(String message) {
-			super(message);
+			super(ChatColor.RED + "" + ChatColor.BOLD + message);
 		}
 		
 	}
@@ -82,15 +83,20 @@ public class SGGame implements Listener {
 			runnable.runTaskTimer(pluginInstance, 0, 1);
 		}
 		new BukkitRunnable() {
-			int countdown = pluginInstance.getConfig().getInt("Countdown");
+			private int time = pluginInstance.getConfig().getInt("Countdown"),
+					seconds = pluginInstance.getConfig().getInt("Seconds"),
+					factor = pluginInstance.getConfig().getInt("Factor");
 			public void run() {
-				if(countdown == 0) {
+				if(time == 0) {
 					this.cancel();
 					started = true;
-					broadcast("THE GAMES HAVE BEGUN!");
+					broadcast(ChatColor.GOLD + "" + ChatColor.MAGIC + "X" + ChatColor.RESET +
+							"" + ChatColor.GOLD + " THE GAMES HAVE BEGUN! " + ChatColor.MAGIC + "X");
 					for(BukkitRunnable runnable : runnables) runnable.cancel();
-				} else broadcast(countdown + " seconds until the games begin...");
-				countdown--;
+				} else if(time <= seconds || time % factor == 0)
+					broadcast(ChatColor.GREEN + "" + ChatColor.BOLD + "" +
+					time + ChatColor.RESET + "" + ChatColor.GREEN + " seconds until the games begin...");
+				time--;
 			}
 		}.runTaskTimer(pluginInstance, 0, 20);
 	}
@@ -101,7 +107,7 @@ public class SGGame implements Listener {
 	
 	public void end() throws SGGameException {
 		if(!started) throw new SGGameException("The game has not yet started.");
-		broadcast("The game has ended.");
+		broadcast(ChatColor.GREEN + "" + ChatColor.BOLD + "The game has ended.");
 		started = false;
 		for(Player player : players) {
 			PlayerInventory inventory = player.getInventory();
@@ -159,12 +165,12 @@ public class SGGame implements Listener {
 	public void join(Player player) throws SGGameException {
 		if(players.contains(player)) throw new SGGameException("You are already in the game.");
 		players.add(player);
-		broadcast(player.getName() + " has joined the game!");
+		broadcast(ChatColor.GREEN + "" + ChatColor.BOLD + player.getName() + " has joined the game!");
 	}
 	
 	public void leave(Player player) throws SGGameException {
 		if(!players.contains(player)) throw new SGGameException("You are not in the game.");
-		broadcast(player.getName() + " has left the game.");
+		broadcast(ChatColor.GREEN + "" + ChatColor.BOLD + player.getName() + " has left the game.");
 		removePlayer(player);
 	}
 	
@@ -174,13 +180,15 @@ public class SGGame implements Listener {
 		boolean oneLeft = playersClone.size() == 1;
 		if(oneLeft) {
 			Player winner = playersClone.get(0);
-			broadcast(winner.getName() + " has won!");
+			broadcast(ChatColor.GOLD + "" + ChatColor.MAGIC + "X" + ChatColor.RESET +
+					"" + ChatColor.GOLD + " " + winner.getName() + " has won the SHUTTER-GAMES! " + ChatColor.MAGIC + "X");
 			try { end(); } catch (SGGameException e) {}
 		} else players = playersClone;
 		return oneLeft;
 	}
 	
 	public void broadcast(String message) {
+		message = SGPlugin.TAG + message;
 		for(Player player : players) player.sendMessage(message);
 	}
 	
