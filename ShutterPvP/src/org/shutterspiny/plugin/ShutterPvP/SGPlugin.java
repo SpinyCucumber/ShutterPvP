@@ -199,7 +199,7 @@ public class SGPlugin extends JavaPlugin {
 					SGMap map = maps.get(data.selectedMap);
 					Location loc = player.getLocation();
 					map.entities = addToArray(map.entities, new SGEntity(args[0], new SLocation(loc)));
-					player.sendMessage("Spawnpoint at " + loc + " has been successfully added to map " + data.selectedMap);
+					player.sendMessage(args[0] + " at " + loc + " has been successfully added to map " + data.selectedMap);
 				}
 				return true;
 			}
