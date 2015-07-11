@@ -14,6 +14,8 @@ public class SGEntity {
 		this.location = location;
 	}
 	
+	public SGEntity() {}
+	
 	public Entity spawn() {
 		Location loc = location.toLocation();
 		return loc.getWorld().spawnEntity(loc, EntityType.valueOf(type));

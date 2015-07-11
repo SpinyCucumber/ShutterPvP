@@ -2,13 +2,13 @@ package org.shutterspiny.plugin.ShutterPvP;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 
 import org.bukkit.Material;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
 public class SGItem {
@@ -48,15 +48,24 @@ public class SGItem {
 	
 	public static SGItem fromItemStack(ItemStack stack, double rarity, int minCount, int maxCount,
 			int minDamage, int maxDamage) {
+		
 		ItemMeta meta = stack.getItemMeta();
-		Map<Enchantment, Integer> enchantMap = meta.getEnchants();
 		List<SGEnchantment> enchantList = new ArrayList<SGEnchantment>();
-		for(Entry<Enchantment, Integer> entry : enchantMap.entrySet())
-			enchantList.add(new SGEnchantment(entry.getKey().getName(), entry.getValue()));
+		
+		for(Entry<Enchantment, Integer> entry : meta.getEnchants().entrySet())
+			enchantList.add(new SGEnchantment(entry.getKey().getName(), entry.getValue(), false));
+		if(meta instanceof EnchantmentStorageMeta) {
+			EnchantmentStorageMeta enchMeta = (EnchantmentStorageMeta) meta;
+			for(Entry<Enchantment, Integer> entry : enchMeta.getStoredEnchants().entrySet())
+				enchantList.add(new SGEnchantment(entry.getKey().getName(), entry.getValue(), true));
+		}
+		
 		SGEnchantment[] enchants = enchantList.toArray(new SGEnchantment[enchantList.size()]);
 		String name = meta.getDisplayName();
 		String type = stack.getType().name();
+		
 		return new SGItem(rarity, type, minCount, maxCount, minDamage, maxDamage, name, enchants);
+		
 	}
 	
 }

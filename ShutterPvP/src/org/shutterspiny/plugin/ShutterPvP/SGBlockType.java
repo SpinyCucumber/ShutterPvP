@@ -38,7 +38,7 @@ public class SGBlockType {
 		if (getClass() != obj.getClass())
 			return false;
 		SGBlockType other = (SGBlockType) obj;
-		if (damage != other.damage)
+		if (damage != other.damage && !(damage == -1) && !(other.damage == -1))
 			return false;
 		if (type == null) {
 			if (other.type != null)
