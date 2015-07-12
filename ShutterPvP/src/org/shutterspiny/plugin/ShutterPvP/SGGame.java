@@ -76,6 +76,7 @@ public class SGGame implements Listener {
 			running = false;
 			eventIndex = 0;
 			time = 0;
+			lastTime = 0;
 		}
 		
 		public void run() {
@@ -262,8 +263,7 @@ public class SGGame implements Listener {
 		if(status == GameStatus.WAITING || !alivePlayers.contains(event.getPlayer())) return;
 		Block block = event.getBlock();
 		if(map().isPlaceable(block)) {
-			Location loc = block.getLocation();
-			if(!changedBlocks.containsKey(loc)) changedBlocks.put(block, new SGBlockType("AIR", 0));
+			if(!changedBlocks.containsKey(block)) changedBlocks.put(block, new SGBlockType("AIR", 0));
 		} else event.setCancelled(true);
 	}
 	

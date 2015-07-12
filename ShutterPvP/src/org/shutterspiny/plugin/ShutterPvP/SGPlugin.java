@@ -13,6 +13,7 @@ import java.util.logging.Level;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -157,7 +158,12 @@ public class SGPlugin extends JavaPlugin {
 					player.sendMessage("You have not selected a map. Use /selectmap <map-name> to select or create a map.");
 				} else {
 					SGMap map = maps.get(data.selectedMap);
-					Location loc = player.getTargetBlock((Set<Material>) null, TARGET_RANGE).getLocation();
+					Block block = player.getTargetBlock((Set<Material>) null, TARGET_RANGE);
+					if(block.getType() != Material.CHEST) {
+						player.sendMessage("Block must be a chest!");
+						return true;
+					}
+					Location loc = block.getLocation();
 					double rarity = Double.parseDouble(args[0]);
 					map.chests = addToArray(map.chests, new SGChest(loc, rarity));
 					player.sendMessage("Chest at " + loc + " with rarity " + rarity + " has been successfully added to map " + data.selectedMap);
