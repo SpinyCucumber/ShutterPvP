@@ -1,6 +1,8 @@
 package org.shutterspiny.plugin.ShutterPvP;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,6 +26,10 @@ import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.Scoreboard;
+import org.shutterspiny.lib.PluginUtils.ObjectiveWriter;
 
 public class SGGame implements Listener {
 	
@@ -51,35 +57,55 @@ public class SGGame implements Listener {
 	private class GameTimer extends BukkitRunnable {
 		
 		private int time, lastTime, eventIndex, seconds, factor;
-		
-		public void run() {
-			if(eventIndex < events.size()) {
-				int timeUntilEvent = event().time - time + lastTime;
-				if(timeUntilEvent == 0) {
-					lastTime = time;
-					event().run(SGGame.this);
-					broadcast(event().message);
-					System.out.println(eventIndex);
-					eventIndex++;
-				} else if(timeUntilEvent <= seconds || timeUntilEvent % factor == 0) {
-					broadcast(ChatColor.GREEN + "" + timeUntilEvent + " seconds until " + event().name);
-				}
-			}
-			time++;
-		}
-		
-		private GameEvent event() {
-			return events.get(eventIndex);
-		}
+		private boolean running;
 		
 		public GameTimer() {
 			seconds = pluginInstance.getConfig().getInt("Seconds");
 			factor = pluginInstance.getConfig().getInt("Factor");
 		}
 		
-		@SuppressWarnings("unused")
+		private GameEvent event() {
+			return events.get(eventIndex);
+		}
+		
+		public void start() {
+			running = true;
+		}
+		
+		public void stop() {
+			running = false;
+			eventIndex = 0;
+			time = 0;
+		}
+		
+		public void run() {
+			if(running) {
+				if(eventIndex < events.size()) {
+					int timeUntilEvent = event().time - time + lastTime;
+					if(timeUntilEvent == 0) {
+						lastTime = time;
+						event().run(SGGame.this);
+						broadcast(event().message);
+						eventIndex++;
+					} else if(timeUntilEvent <= seconds || timeUntilEvent % factor == 0) {
+						broadcast(ChatColor.GREEN + "" + timeUntilEvent + " seconds until " + event().name);
+					}
+				}
+				time++;
+			}
+			updateScoreboard();
+		}
+
 		private void updateScoreboard() {
-			
+			for(String entry : scoreboard.getEntries()) scoreboard.resetScores(entry);
+			ObjectiveWriter writer = new ObjectiveWriter(scoreboard.getObjective("main"));
+			Date date = new Date(time * 1000);
+			writer.write(ChatColor.GREEN + "Time Elapsed: " + DATE_FORMAT.format(date));
+			writer.writeSpace();
+			for(Player player : players) writer.write(ChatColor.YELLOW + player.getName());
+			writer.write(ChatColor.GREEN + "Players In-Game");
+			writer.writeSpace();
+			writer.write(ChatColor.GREEN + "Players Remaining: " + alivePlayers.size());
 		}
 		
 	}
@@ -89,15 +115,15 @@ public class SGGame implements Listener {
 		private Player player;
 		private Location loc;
 		
-		@Override
-		public void run() {
-			player.teleport(loc);
-		}
-
 		public PlayerFreezer(Player player, Location loc) {
 			this.player = player;
 			this.loc = loc;
 			this.runTaskTimer(pluginInstance, 0, 1);
+		}
+
+		@Override
+		public void run() {
+			player.teleport(loc);
 		}
 		
 	}
@@ -111,17 +137,30 @@ public class SGGame implements Listener {
 		}
 		
 	}
-
-	private SGPlugin pluginInstance;
 	
+	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("mm:ss");
+	
+	private static void clear(Player player) {
+		player.setHealth(20);
+		player.setFoodLevel(20);
+		player.setLevel(0);
+		player.setExp(0);
+		PlayerInventory inventory = player.getInventory();
+		inventory.clear();
+		inventory.setArmorContents(new ItemStack[]{null, null, null, null});
+	}
+	
+	private SGPlugin pluginInstance;
+	private Scoreboard scoreboard;
 	private String mapName;
 	private List<Player> players, alivePlayers;
 	private List<Entity> spawnedEntities;
 	private List<GameEvent> events;
 	private List<PlayerFreezer> freezers;
-	private Map<Block, SGBlockType> changedBlocks;
 	
+	private Map<Block, SGBlockType> changedBlocks;
 	private GameStatus status = GameStatus.WAITING;
+	
 	private GameTimer timer;
 	
 	public SGGame(SGPlugin pluginInstance, String mapName) {
@@ -129,10 +168,18 @@ public class SGGame implements Listener {
 		this.pluginInstance = pluginInstance;
 		this.mapName = mapName;
 		players = new ArrayList<Player>();
+		alivePlayers = new ArrayList<Player>();
 		spawnedEntities = new ArrayList<Entity>();
 		events = new ArrayList<GameEvent>();
 		freezers = new ArrayList<PlayerFreezer>();
 		changedBlocks = new HashMap<Block, SGBlockType>();
+		timer = new GameTimer();
+		timer.runTaskTimer(pluginInstance, 0, 20);
+		
+		scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
+		Objective main = scoreboard.registerNewObjective("main", "dummy");
+		main.setDisplaySlot(DisplaySlot.SIDEBAR);
+		main.setDisplayName(ChatColor.GOLD + "" + ChatColor.BOLD + "SHUTTER-GAMES");
 		
 		events.add(new GameEvent(pluginInstance.getConfig().getInt("Countdown"), "unfreeze", "Players have been unfrozen! GO!") {
 			public void run(SGGame game) {
@@ -161,7 +208,8 @@ public class SGGame implements Listener {
 		if(status == GameStatus.WAITING) throw new SGGameException("The game has not yet started.");
 		broadcast(ChatColor.GREEN + "" + ChatColor.BOLD + "The game has ended.");
 		status = GameStatus.WAITING;
-		timer.cancel();
+		
+		timer.stop();
 		
 		for(Player player : players) clear(player);
 		
@@ -170,7 +218,11 @@ public class SGGame implements Listener {
 		for(Entity entity : spawnedEntities) if(entity.isValid()) entity.remove();
 		
 		boolean playersLeave = pluginInstance.getConfig().getBoolean("PlayersLeave");
-		if(playersLeave) players.clear();
+		if(playersLeave) {
+			broadcast(ChatColor.GREEN + "" + ChatColor.BOLD + "You have left the game.");
+			for(Player player : players) player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
+			players.clear();
+		}
 		
 		alivePlayers.clear();
 		changedBlocks.clear();
@@ -178,13 +230,14 @@ public class SGGame implements Listener {
 		
 	}
 	
-	private SGMap getMap() {
+	private SGMap map() {
 		return pluginInstance.getMaps().get(mapName);
 	}
 	
 	public void join(Player player) throws SGGameException {
 		if(players.contains(player)) throw new SGGameException("You are already in the game.");
 		players.add(player);
+		player.setScoreboard(scoreboard);
 		broadcast(ChatColor.GREEN + "" + ChatColor.BOLD + player.getName() + " has joined the game!");
 	}
 	
@@ -193,24 +246,32 @@ public class SGGame implements Listener {
 		broadcast(ChatColor.GREEN + "" + ChatColor.BOLD + player.getName() + " has left the game.");
 		if(status != GameStatus.WAITING) removePlayer(player);
 		players.remove(player);
+		player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
 	}
 	
 	@EventHandler
 	public void onBlockBreak(BlockBreakEvent event) {
 		if(status == GameStatus.WAITING || !alivePlayers.contains(event.getPlayer())) return;
 		Block block = event.getBlock();
-		if(getMap().isMineable(block)) changedBlocks.put(block, new SGBlockType(block));
-		else if(!getMap().isPlaceable(block)) event.setCancelled(true);
+		if(map().isMineable(block)) changedBlocks.put(block, new SGBlockType(block));
+		else if(!map().isPlaceable(block)) event.setCancelled(true);
 	}
 	
 	@EventHandler
 	public void onBlockPlace(BlockPlaceEvent event) {
 		if(status == GameStatus.WAITING || !alivePlayers.contains(event.getPlayer())) return;
 		Block block = event.getBlock();
-		if(getMap().isPlaceable(block)) {
+		if(map().isPlaceable(block)) {
 			Location loc = block.getLocation();
 			if(!changedBlocks.containsKey(loc)) changedBlocks.put(block, new SGBlockType("AIR", 0));
 		} else event.setCancelled(true);
+	}
+	
+	@EventHandler
+	public void onEntityDamageEvent(EntityDamageEvent event) {
+		if(status == GameStatus.FIGHTING || !(event.getEntity() instanceof Player)) return;
+		Player player = (Player) event.getEntity();
+		if(alivePlayers.contains(player)) event.setCancelled(true);
 	}
 	
 	@EventHandler
@@ -227,13 +288,6 @@ public class SGGame implements Listener {
 		if(status == GameStatus.WAITING || !alivePlayers.contains(player)) return;
 		broadcast(player.getName() + " has died!");
 		if(removePlayer(player)) event.getDrops().clear();
-	}
-	
-	@EventHandler
-	public void onEntityDamageEvent(EntityDamageEvent event) {
-		if(status == GameStatus.FIGHTING || !(event.getEntity() instanceof Player)) return;
-		Player player = (Player) event.getEntity();
-		if(alivePlayers.contains(player)) event.setCancelled(true);
 	}
 	
 	private boolean removePlayer(Player player) {
@@ -257,7 +311,7 @@ public class SGGame implements Listener {
 		if(mapName == null) throw new SGGameException("Must select map first.");
 		if(status != GameStatus.WAITING) throw new SGGameException("The game is already in progress.");
 		
-		SGMap map = getMap();
+		SGMap map = map();
 		for(SGChest chest : map.chests) chest.load();
 		for(SGEntity entity : map.entities) spawnedEntities.add(entity.spawn());
 
@@ -269,17 +323,8 @@ public class SGGame implements Listener {
 			freezers.add(new PlayerFreezer(player, spawn));
 		}
 		
-		timer = new GameTimer();
-		timer.runTaskTimer(pluginInstance, 0, 20);
+		timer.start();
 		
-	}
-	
-	private static void clear(Player player) {
-		player.setHealth(20);
-		player.setFoodLevel(20);
-		PlayerInventory inventory = player.getInventory();
-		inventory.clear();
-		inventory.setArmorContents(new ItemStack[]{null, null, null, null});
 	}
 	
 }
