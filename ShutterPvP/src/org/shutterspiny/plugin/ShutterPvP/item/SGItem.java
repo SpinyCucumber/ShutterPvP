@@ -1,4 +1,4 @@
-package org.shutterspiny.plugin.ShutterPvP;
+package org.shutterspiny.plugin.ShutterPvP.item;
 
 import java.util.ArrayList;
 import java.util.List;

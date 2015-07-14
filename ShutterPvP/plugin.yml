@@ -2,46 +2,82 @@ name: ShutterPvP
 main: org.shutterspiny.plugin.ShutterPvP.SGPlugin
 version: 0.7
 commands:
-  sgselectmap:
-    description: Selects a SG map for editing. Creates new map if necessary.
-    usage: /selectmap <map-name> or /selectmap to deselect map
+  sgcreatemap:
+    description: Creates a SG map.
+    usage: /sgcreatemap <map-name>
+    permission: ShutterPvP.maps
+  sgeditmap:
+    description: Selects a SG map for editing.
+    usage: /sgeditmap <map-name>
+    permission: ShutterPvP.maps
+  sgstopeditting:
+    description: Deselects your currently selected SG map.
+    usage: /sgstopeditting
+    permission: ShutterPvP.maps
   sgaddchest:
     desciption: Adds a chest at the block you're standing in. Rarity argument represents how hard the chest is to get to.
-    usage: /addchest <rarity>
+    usage: /sgaddchest <rarity>
+    permission: ShutterPvP.maps
   sgaddspawnpoint:
     description: Adds a spawnpoint at the block you're standing in.
-    usage: /spawnpoint
+    usage: /sgspawnpoint
+    permission: ShutterPvP.maps
   sgadditem:
     description: Adds a SGItem constructed from the item in your hand.
-    usage: /additem <rarity> <min-count> <max-count>
+    usage: /sgadditem <rarity> <min-count> <max-count>
+    permission: ShutterPvP.maps
   sgadditemdamaged:
     description: Adds a SGItem with a sepecified random damage value range.
-    usage: /additem <rarity> <min-count> <max-count> <min-damage> <max-damage>
+    usage: /sgadditem <rarity> <min-count> <max-count> <min-damage> <max-damage>
+    permission: ShutterPvP.maps
   sgaddmineable:
     description: Makes the type of block your looking at mineable when playing on the selected map.
+    usage: /sgaddmineable
+    permission: ShutterPvP.maps
   sgaddplaceable:
     description: Makes the type of block your looking at placeable when playing on the selected map.
-  sgaddentity:
-    description: Adds a SGEntity to the currently selected map.
-    usage: /addentity <type>
+    usage: /sgaddplaceable
+    permission: ShutterPvP.maps
+  sgaddspawner:
+    description: Adds a SGSpawner to the currently selected map.
+    usage: /sgaddspawner
+    permission: ShutterPvP.maps
   sgsave:
     description: Saves maps.
+    usage: /sgsave
+    permission: ShutterPvP.maps
   sgload:
     description: Loads maps.
+    usage: /sgload
+    permission: ShutterPvP.maps
   sglistmaps:
     description: Lists maps.
+    usage: /sglistmaps
+    permission: ShutterPvP.maps
   sgstart:
     description: Starts the game.
+    usage: /sgstart
+    permission: ShutterPvP.games
   sgsetmap:
     description: Sets the game's map.
     usage: /sgsetmap <map-name>
+    permission: ShutterPvP.games
   sgjoin:
     description: Joins the game.
+    usage: /sgjoin
+    permission: ShutterPvP.games
   sgstop:
     description: Stops the game.
+    usage: /sgstop
+    permission: ShutterPvP.games
   sgleave:
     description: Leaves the game.
+    usage: /sgleave
+    permission: ShutterPvP.games
 permissions:
   ShutterPvP.maps:
     desciption: Gives access to all SG map-editing commands. Ops have this permission by default.
+    default: op
+  ShutterPvP.games:
+    desciption: Gives access to all SG game commands. Ops have this permission by default.
     default: op

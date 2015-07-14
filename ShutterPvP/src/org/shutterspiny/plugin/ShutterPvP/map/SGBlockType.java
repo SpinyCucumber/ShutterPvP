@@ -1,37 +1,36 @@
-package org.shutterspiny.plugin.ShutterPvP;
+package org.shutterspiny.plugin.ShutterPvP.map;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.shutterspiny.lib.PluginUtils.mapping.Convertable;
+import org.shutterspiny.plugin.ShutterPvP.raw.SGRawBlockType;
 
-public class SGBlockType {
+public class SGBlockType implements Convertable<SGRawBlockType> {
 	
-	public String type;
-	public int damage;
+	private Material type;
+	private byte data;
 	
-	public SGBlockType(String type, int damage) {
+	public SGBlockType(Material type, byte data) {
 		this.type = type;
-		this.damage = damage;
+		this.data = data;
 	}
-	
-	public SGBlockType() {}
 	
 	@SuppressWarnings("deprecation")
 	public SGBlockType(Block block) {
-		this.type = block.getType().name();
-		this.damage = (int) block.getData();
+		this(block.getType(), block.getData());
 	}
 	
 	@SuppressWarnings("deprecation")
 	public void set(Block block) {
-		block.setType(Material.valueOf(type));
-		block.setData((byte) damage);
+		block.setType(type);
+		block.setData(data);
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + damage;
+		result = prime * result + data;
 		result = prime * result + ((type == null) ? 0 : type.hashCode());
 		return result;
 	}
@@ -45,14 +44,16 @@ public class SGBlockType {
 		if (getClass() != obj.getClass())
 			return false;
 		SGBlockType other = (SGBlockType) obj;
-		if (damage != other.damage && !(damage == -1) && !(other.damage == -1))
+		if (data != other.data)
 			return false;
-		if (type == null) {
-			if (other.type != null)
-				return false;
-		} else if (!type.equals(other.type))
+		if (type != other.type)
 			return false;
 		return true;
+	}
+
+	@Override
+	public SGRawBlockType convert() {
+		return new SGRawBlockType(type.name(), (int) data);
 	}
 	
 }

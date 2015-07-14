@@ -1,4 +1,4 @@
-package org.shutterspiny.plugin.ShutterPvP;
+package org.shutterspiny.plugin.ShutterPvP.item;
 
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;

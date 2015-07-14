@@ -1,7 +1,6 @@
-package org.shutterspiny.plugin.ShutterPvP;
+package org.shutterspiny.plugin.ShutterPvP.item;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
@@ -11,13 +10,15 @@ import org.bukkit.block.Block;
 import org.bukkit.block.Chest;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.inventory.Inventory;
+import org.shutterspiny.lib.PluginUtils.mapping.Convertable;
+import org.shutterspiny.plugin.ShutterPvP.SGPlugin;
+import org.shutterspiny.plugin.ShutterPvP.raw.SGRawChest;
+import org.shutterspiny.plugin.ShutterPvP.raw.SLocation;
 
-public class SGChest {
+public class SGChest implements Convertable<SGRawChest> {
 
 	private final static int MAX_SLOT = 27;
-	
-	//Sadly, with JSON, there is no way to pass down an instance of SGPlugin to each chest.
-	public static SGPlugin pluginInstance;
+
 	private static Random random;
 	private static List<Integer> slots;
 	
@@ -28,27 +29,22 @@ public class SGChest {
 		for(int i = 0; i < MAX_SLOT; i++) slots.add(i);
 	}
 	
-	public double rarity;
-	public SLocation location;
+	private double rarity;
+	private Location location;
+	public SGPlugin pluginInstance;
 	
-	public SGChest(SLocation location, double rarity) {
+	public SGChest(Location location, double rarity) {
 		this.location = location;
 		this.rarity = rarity;
 	}
-	
-	public SGChest(Location location, double rarity) {
-		this(new SLocation(location), rarity);
-	}
-	
-	public SGChest() {}
 
 	public void load() {
 		
-		Block block = location.toLocation().getBlock();
+		Block block = location.getBlock();
 		Inventory inventory = ((Chest) block.getState()).getBlockInventory();
 		inventory.clear();
 		
-		List<SGItem> items = Arrays.asList(pluginInstance.getItems());
+		List<SGItem> items = pluginInstance.getItems();
 		if(items.size() == 0) return;
 		
 		FileConfiguration config = pluginInstance.getConfig();
@@ -65,6 +61,11 @@ public class SGChest {
 			inventory.setItem(slot, item.toItemStack());
 		}
 		
+	}
+	
+	@Override
+	public SGRawChest convert() {
+		return new SGRawChest(SLocation.converter.convert(location), rarity);
 	}
 	
 	private static SGItem getClosestItem(List<SGItem> items, final double rarity) {

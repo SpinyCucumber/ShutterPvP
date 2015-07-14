@@ -12,6 +12,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -29,7 +30,11 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
-import org.shutterspiny.lib.PluginUtils.ObjectiveWriter;
+import org.shutterspiny.lib.PluginUtils.command.AbstractCommand.CommandException;
+import org.shutterspiny.lib.PluginUtils.misc.ObjectiveWriter;
+import org.shutterspiny.plugin.ShutterPvP.item.SGChest;
+import org.shutterspiny.plugin.ShutterPvP.map.SGBlockType;
+import org.shutterspiny.plugin.ShutterPvP.map.SGMap;
 
 public class SGGame implements Listener {
 	
@@ -129,16 +134,6 @@ public class SGGame implements Listener {
 		
 	}
 	
-	public static class SGGameException extends Exception {
-
-		private static final long serialVersionUID = 1L;
-
-		public SGGameException(String message) {
-			super(ChatColor.RED + "" + ChatColor.BOLD + message);
-		}
-		
-	}
-	
 	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("mm:ss");
 	
 	private static void clear(Player player) {
@@ -152,8 +147,8 @@ public class SGGame implements Listener {
 	}
 	
 	private SGPlugin pluginInstance;
+	private SGMap map;
 	private Scoreboard scoreboard;
-	private String mapName;
 	private List<Player> players, alivePlayers;
 	private List<Entity> spawnedEntities;
 	private List<GameEvent> events;
@@ -164,10 +159,9 @@ public class SGGame implements Listener {
 	
 	private GameTimer timer;
 	
-	public SGGame(SGPlugin pluginInstance, String mapName) {
+	public SGGame(SGPlugin pluginInstance) {
 		
 		this.pluginInstance = pluginInstance;
-		this.mapName = mapName;
 		players = new ArrayList<Player>();
 		alivePlayers = new ArrayList<Player>();
 		spawnedEntities = new ArrayList<Entity>();
@@ -204,9 +198,9 @@ public class SGGame implements Listener {
 		for(Player player : players) player.sendMessage(message);
 	}
 	
-	public void end() throws SGGameException {
+	public void end() throws CommandException {
 		
-		if(status == GameStatus.WAITING) throw new SGGameException("The game has not yet started.");
+		if(status == GameStatus.WAITING) throw new CommandException("The game has not yet started.");
 		broadcast(ChatColor.GREEN + "" + ChatColor.BOLD + "The game has ended.");
 		status = GameStatus.WAITING;
 		
@@ -231,19 +225,19 @@ public class SGGame implements Listener {
 		
 	}
 	
-	private SGMap map() {
-		return pluginInstance.getMaps().get(mapName);
+	public void setMap(String mapName) {
+		map = pluginInstance.getMaps().get(mapName);
 	}
 	
-	public void join(Player player) throws SGGameException {
-		if(players.contains(player)) throw new SGGameException("You are already in the game.");
+	public void join(Player player) throws CommandException {
+		if(players.contains(player)) throw new CommandException("You are already in the game.");
 		players.add(player);
 		player.setScoreboard(scoreboard);
 		broadcast(ChatColor.GREEN + "" + ChatColor.BOLD + player.getName() + " has joined the game!");
 	}
 	
-	public void leave(Player player) throws SGGameException {
-		if(!players.contains(player)) throw new SGGameException("You are not in the game.");
+	public void leave(Player player) throws CommandException {
+		if(!players.contains(player)) throw new CommandException("You are not in the game.");
 		broadcast(ChatColor.GREEN + "" + ChatColor.BOLD + player.getName() + " has left the game.");
 		if(status != GameStatus.WAITING) removePlayer(player);
 		players.remove(player);
@@ -254,16 +248,16 @@ public class SGGame implements Listener {
 	public void onBlockBreak(BlockBreakEvent event) {
 		if(status == GameStatus.WAITING || !alivePlayers.contains(event.getPlayer())) return;
 		Block block = event.getBlock();
-		if(map().isMineable(block)) changedBlocks.put(block, new SGBlockType(block));
-		else if(!map().isPlaceable(block)) event.setCancelled(true);
+		if(map.isMineable(block)) changedBlocks.put(block, new SGBlockType(block));
+		else if(!map.isPlaceable(block)) event.setCancelled(true);
 	}
 	
 	@EventHandler
 	public void onBlockPlace(BlockPlaceEvent event) {
 		if(status == GameStatus.WAITING || !alivePlayers.contains(event.getPlayer())) return;
 		Block block = event.getBlock();
-		if(map().isPlaceable(block)) {
-			if(!changedBlocks.containsKey(block)) changedBlocks.put(block, new SGBlockType("AIR", 0));
+		if(map.isPlaceable(block)) {
+			if(!changedBlocks.containsKey(block)) changedBlocks.put(block, new SGBlockType(Material.AIR, (byte) 0));
 		} else event.setCancelled(true);
 	}
 	
@@ -297,26 +291,20 @@ public class SGGame implements Listener {
 			Player winner = alivePlayers.get(0);
 			broadcast(ChatColor.GOLD + "" + ChatColor.MAGIC + "X" + ChatColor.RESET +
 					"" + ChatColor.GOLD + " " + winner.getName() + " has won the SHUTTER-GAMES! " + ChatColor.MAGIC + "X");
-			try { end(); } catch (SGGameException e) {}
+			try { end(); } catch (CommandException e) {}
 		}
 		return oneLeft;
 	}
 	
-	public void setMap(String name) {
-		this.mapName = name;
-	}
-	
-	public void start() throws SGGameException {
+	public void start() throws CommandException {
 		
-		if(mapName == null) throw new SGGameException("Must select map first.");
-		if(status != GameStatus.WAITING) throw new SGGameException("The game is already in progress.");
-		
-		SGMap map = map();
+		if(map == null) throw new CommandException("Must select map first.");
+		if(status != GameStatus.WAITING) throw new CommandException("The game is already in progress.");
+
 		for(SGChest chest : map.chests) chest.load();
-		for(SGEntity entity : map.entities) spawnedEntities.add(entity.spawn());
 
 		for(int i = 0; i < players.size(); i++) {
-			Location spawn = map.spawnPoints[i % map.spawnPoints.length].toLocation();
+			Location spawn = map.spawnPoints.get(i % map.spawnPoints.size());
 			Player player = players.get(i);
 			clear(player);
 			player.setGameMode(GameMode.SURVIVAL);
