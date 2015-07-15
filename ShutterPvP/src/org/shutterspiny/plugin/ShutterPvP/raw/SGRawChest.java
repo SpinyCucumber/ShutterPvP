@@ -5,10 +5,10 @@ import org.shutterspiny.plugin.ShutterPvP.item.SGChest;
 
 public class SGRawChest implements Convertable<SGChest> {
 	
-	public SLocation location;
+	public RawLocation location;
 	public double rarity;
 	
-	public SGRawChest(SLocation location, double rarity) {
+	public SGRawChest(RawLocation location, double rarity) {
 		this.location = location;
 		this.rarity = rarity;
 	}

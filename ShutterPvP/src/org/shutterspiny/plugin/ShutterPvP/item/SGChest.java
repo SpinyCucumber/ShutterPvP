@@ -13,7 +13,7 @@ import org.bukkit.inventory.Inventory;
 import org.shutterspiny.lib.PluginUtils.mapping.Convertable;
 import org.shutterspiny.plugin.ShutterPvP.SGPlugin;
 import org.shutterspiny.plugin.ShutterPvP.raw.SGRawChest;
-import org.shutterspiny.plugin.ShutterPvP.raw.SLocation;
+import org.shutterspiny.plugin.ShutterPvP.raw.RawLocation;
 
 public class SGChest implements Convertable<SGRawChest> {
 
@@ -65,14 +65,14 @@ public class SGChest implements Convertable<SGRawChest> {
 	
 	@Override
 	public SGRawChest convert() {
-		return new SGRawChest(SLocation.converter.convert(location), rarity);
+		return new SGRawChest(RawLocation.converter.convert(location), rarity);
 	}
 	
 	private static SGItem getClosestItem(List<SGItem> items, final double rarity) {
 		List<SGItem> closest = new ArrayList<SGItem>();
 		double dist = 0;
 		for(SGItem item : items) {
-			double d = Math.abs(item.rarity - rarity);
+			double d = Math.abs(item.getRarity() - rarity);
 			if(closest.isEmpty() || d < dist) {
 				closest.clear();
 				closest.add(item);

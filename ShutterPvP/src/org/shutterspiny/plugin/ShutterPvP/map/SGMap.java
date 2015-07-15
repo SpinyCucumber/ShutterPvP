@@ -10,8 +10,10 @@ import org.shutterspiny.lib.PluginUtils.mapping.Convertable;
 import org.shutterspiny.plugin.ShutterPvP.SGPlugin;
 import org.shutterspiny.plugin.ShutterPvP.entity.SGSpawner;
 import org.shutterspiny.plugin.ShutterPvP.item.SGChest;
+import org.shutterspiny.plugin.ShutterPvP.raw.SGRawBlockType;
+import org.shutterspiny.plugin.ShutterPvP.raw.SGRawChest;
 import org.shutterspiny.plugin.ShutterPvP.raw.SGRawMap;
-import org.shutterspiny.plugin.ShutterPvP.raw.SLocation;
+import org.shutterspiny.plugin.ShutterPvP.raw.RawLocation;
 
 public class SGMap implements Convertable<SGRawMap> {
 	
@@ -44,11 +46,11 @@ public class SGMap implements Convertable<SGRawMap> {
 
 	@Override
 	public SGRawMap convert() {
-		return new SGRawMap(FileUtils.convertArray(FileUtils.toArray(mineables)),
-				FileUtils.convertArray(FileUtils.toArray(placeables)),
-				FileUtils.convertArray(FileUtils.toArray(chests)),
-				FileUtils.convertArray(FileUtils.toArray(spawnPoints), SLocation.converter),
-				FileUtils.toArray(spawners));
+		return new SGRawMap(FileUtils.toArray(FileUtils.convertList(mineables), SGRawBlockType.class),
+				FileUtils.toArray(FileUtils.convertList(placeables), SGRawBlockType.class),
+				FileUtils.toArray(FileUtils.convertList(chests), SGRawChest.class),
+				FileUtils.toArray(FileUtils.convertList(spawnPoints, RawLocation.converter), RawLocation.class),
+				FileUtils.toArray(spawners, SGSpawner.class));
 	}
 	
 	public boolean isMineable(Block block) {

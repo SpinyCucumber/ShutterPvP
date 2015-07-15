@@ -12,11 +12,11 @@ public class SGRawMap implements Convertable<SGMap> {
 	public SGRawBlockType[] mineables;
 	public SGRawBlockType[] placeables;
 	public SGRawChest[] chests;
-	public SLocation[] spawnPoints;
+	public RawLocation[] spawnPoints;
 	public SGSpawner[] entities;
 	
 	public SGRawMap(SGRawBlockType[] mineables, SGRawBlockType[] placeables, SGRawChest[] chests,
-			SLocation[] spawnPoints, SGSpawner[] entities) {
+			RawLocation[] spawnPoints, SGSpawner[] entities) {
 		this.mineables = mineables;
 		this.placeables = placeables;
 		this.chests = chests;
@@ -28,10 +28,10 @@ public class SGRawMap implements Convertable<SGMap> {
 
 	@Override
 	public SGMap convert() {
-		return new SGMap(Arrays.asList(FileUtils.convertArray(mineables)),
-				Arrays.asList(FileUtils.convertArray(placeables)),
-				Arrays.asList(FileUtils.convertArray(chests)),
-				Arrays.asList(FileUtils.convertArray(spawnPoints)),
+		return new SGMap(FileUtils.convertList(Arrays.asList(mineables)),
+				FileUtils.convertList(Arrays.asList(placeables)),
+				FileUtils.convertList(Arrays.asList(chests)),
+				FileUtils.convertList(Arrays.asList(spawnPoints)),
 				Arrays.asList(entities)
 				);
 	}

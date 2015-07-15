@@ -3,14 +3,16 @@ package org.shutterspiny.plugin.ShutterPvP.item;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.shutterspiny.lib.PluginUtils.mapping.Convertable;
+import org.shutterspiny.plugin.ShutterPvP.raw.SGRawEnchantment;
 
-public class SGEnchantment {
+public class SGEnchantment implements Convertable<SGRawEnchantment> {
 	
-	public String type;
-	public int level;
-	public boolean stored;
+	private Enchantment type;
+	private int level;
+	private boolean stored;
 	
-	public SGEnchantment(String type, int level, boolean stored) {
+	public SGEnchantment(Enchantment type, int level, boolean stored) {
 		this.type = type;
 		this.level = level;
 		this.stored = stored;
@@ -19,9 +21,13 @@ public class SGEnchantment {
 	public SGEnchantment() {}
 	
 	public void apply(ItemMeta meta) {
-		Enchantment enchant = Enchantment.getByName(type);
-		if(stored) ((EnchantmentStorageMeta) meta).addStoredEnchant(enchant, level, true);
-		else meta.addEnchant(Enchantment.getByName(type), level, true);
+		if(stored) ((EnchantmentStorageMeta) meta).addStoredEnchant(type, level, true);
+		else meta.addEnchant(type, level, true);
+	}
+
+	@Override
+	public SGRawEnchantment convert() {
+		return new SGRawEnchantment(type.getName(), level, stored);
 	}
 	
 }

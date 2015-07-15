@@ -14,7 +14,9 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.shutterspiny.lib.PluginUtils.command.AbstractCommand;
+import org.shutterspiny.lib.PluginUtils.files.ConverterNode;
 import org.shutterspiny.lib.PluginUtils.files.FileNode;
+import org.shutterspiny.lib.PluginUtils.files.FileUtils;
 import org.shutterspiny.lib.PluginUtils.files.JSONObjectFile;
 import org.shutterspiny.lib.PluginUtils.files.MapNode;
 import org.shutterspiny.lib.PluginUtils.files.ParentNode;
@@ -23,6 +25,8 @@ import org.shutterspiny.lib.PluginUtils.mapping.Factory;
 import org.shutterspiny.lib.PluginUtils.mapping.MapBuilder;
 import org.shutterspiny.plugin.ShutterPvP.item.SGItem;
 import org.shutterspiny.plugin.ShutterPvP.map.SGMap;
+import org.shutterspiny.plugin.ShutterPvP.raw.SGRawItem;
+import org.shutterspiny.plugin.ShutterPvP.raw.SGRawMap;
 
 //Temporary
 public class SGPlugin extends JavaPlugin {
@@ -64,7 +68,7 @@ public class SGPlugin extends JavaPlugin {
 		
 		//Use plugin utils to load files
 		node = new ParentNode(new MapBuilder<String,FileNode<?>>()
-				.with("maps", new MapNode<SGMap>(new JSONObjectFile<SGMap>(SGMap.class), new Factory<Map<String,SGMap>>(){ public Map<String, SGMap> create() { return new HashMap<String, SGMap>();}}, ".json"))
+				.with("maps", new MapNode<SGMap>(new ConverterNode<SGMap, SGRawMap>(new JSONObjectFile<SGRawMap>(SGRawMap.class)), new Factory<Map<String,SGMap>>(){ public Map<String, SGMap> create() { return new HashMap<String, SGMap>();}}, ".json"))
 				.with("items.json", new JSONObjectFile<SGItem[]>(SGItem[].class))
 				.end());
 		
@@ -75,7 +79,7 @@ public class SGPlugin extends JavaPlugin {
 			this.reloadConfig();
 			Map<String, Object> files = node.load(this.getDataFolder());
 			maps = (Map<String, SGMap>) files.get("maps");
-			items = Arrays.asList((SGItem[]) files.get("items.json"));
+			items = FileUtils.convertList(Arrays.asList((SGRawItem[]) files.get("items.json")));
 			log(Level.INFO, "Successfully loaded data.");
 			
 		} catch(IOException e) {
@@ -121,7 +125,7 @@ public class SGPlugin extends JavaPlugin {
 		
 		Map<String, Object> files = new HashMap<String, Object>();
 		files.put("maps", maps);
-		files.put("items.json", items);
+		files.put("items.json", FileUtils.toArray(FileUtils.convertList(items), SGRawItem.class));
 		
 		log(Level.INFO, "Saving data...");
 		node.save(getDataFolder(), files);
