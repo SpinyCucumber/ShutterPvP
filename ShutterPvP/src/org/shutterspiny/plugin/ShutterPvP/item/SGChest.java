@@ -68,6 +68,11 @@ public class SGChest implements Convertable<SGRawChest> {
 		return new SGRawChest(RawLocation.converter.convert(location), rarity);
 	}
 	
+	@Override
+	public String toString() {
+		return "SGChest [rarity=" + rarity + ", location=" + location + "]";
+	}
+
 	private static SGItem getClosestItem(List<SGItem> items, final double rarity) {
 		List<SGItem> closest = new ArrayList<SGItem>();
 		double dist = 0;

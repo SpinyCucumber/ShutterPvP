@@ -74,11 +74,16 @@ public class SGItem implements Convertable<SGRawItem> {
 		return rarity;
 	}
 
+	
+	
 	@Override
 	public String toString() {
-		return type.name();
+		return "SGItem [rarity=" + rarity + ", type=" + type + ", minCount="
+				+ minCount + ", maxCount=" + maxCount + ", minDamage="
+				+ minDamage + ", maxDamage=" + maxDamage + ", name=" + name
+				+ "]";
 	}
-	
+
 	@Override
 	public SGRawItem convert() {
 		return new SGRawItem(rarity, type.name(), minCount, maxCount,

@@ -29,5 +29,11 @@ public class SGEnchantment implements Convertable<SGRawEnchantment> {
 	public SGRawEnchantment convert() {
 		return new SGRawEnchantment(type.getName(), level, stored);
 	}
+
+	@Override
+	public String toString() {
+		return "SGEnchantment [type=" + type + ", level=" + level + ", stored="
+				+ stored + "]";
+	}
 	
 }

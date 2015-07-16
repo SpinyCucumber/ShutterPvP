@@ -52,6 +52,11 @@ public class SGBlockType implements Convertable<SGRawBlockType> {
 	}
 
 	@Override
+	public String toString() {
+		return "SGBlockType [type=" + type + ", data=" + data + "]";
+	}
+
+	@Override
 	public SGRawBlockType convert() {
 		return new SGRawBlockType(type.name(), (int) data);
 	}

@@ -225,7 +225,9 @@ public class SGGame implements Listener {
 		
 	}
 	
-	public void setMap(String mapName) {
+	public void setMap(String mapName) throws CommandException {
+		if(!pluginInstance.getMaps().containsKey(mapName))
+			throw new CommandException("That map does not exist.");
 		map = pluginInstance.getMaps().get(mapName);
 	}
 	
