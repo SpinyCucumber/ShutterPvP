@@ -8,6 +8,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.shutterspiny.lib.PluginUtils.command.AbstractCommand;
@@ -160,6 +161,15 @@ public final class Commands {
 						(Integer) args.get(1), (Integer) args.get(2));
 				this.getPlugin().getItems().add(item);
 				return "Successfully added " + item;
+			}
+		});
+		
+		sgCommands.add(new ItemCommand<SGPlugin>(new Argument<?>[]{Args.ENCHANT, Args.INT}, "sgenchant"){
+			protected String runItem(Player sender, ItemStack stack, List<Object> args) throws CommandException {
+				Enchantment enchant = (Enchantment) args.get(0);
+				Integer level = (Integer) args.get(1);
+				stack.getItemMeta().addEnchant(enchant, level, true);
+				return enchant.getName() + " x" + level + " has been added to " + stack + ".";
 			}
 		});
 		

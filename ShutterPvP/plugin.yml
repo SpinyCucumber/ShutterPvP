@@ -30,6 +30,10 @@ commands:
     description: Adds a SGItem constructed from the item in your hand.
     usage: /sgadditem <rarity> <min-count> <max-count>
     permission: ShutterPvP.maps
+  sgenchant:
+    description: Unsafe enchanting.
+    usage: /sgenchant <enchantment-name> <level>
+    permission: ShutterPvP.maps
   sgaddmineable:
     description: Makes the type of block your looking at mineable when playing on the selected map.
     usage: /sgaddmineable
