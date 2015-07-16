@@ -15,7 +15,7 @@ commands:
     usage: /sgstopeditting
     permission: ShutterPvP.maps
   sgaddchest:
-    desciption: Adds a chest at the block you're standing in. Rarity argument represents how hard the chest is to get to.
+    description: Adds a chest as the block you're looking at. Rarity argument represents how hard the chest is to get to.
     usage: /sgaddchest <rarity>
     permission: ShutterPvP.maps
   sgaddspawnpoint:
@@ -23,12 +23,12 @@ commands:
     usage: /sgspawnpoint
     permission: ShutterPvP.maps
   sgadditem:
-    description: Adds a SGItem constructed from the item in your hand.
-    usage: /sgadditem <rarity> <min-count> <max-count>
+    description: Adds a SGItem with a specified damage value range.
+    usage: /sgadditem <rarity> <min-count> <max-count> <min-damage> <max-damage>
     permission: ShutterPvP.maps
   sgadditemdamaged:
-    description: Adds a SGItem with a sepecified random damage value range.
-    usage: /sgadditem <rarity> <min-count> <max-count> <min-damage> <max-damage>
+    description: Adds a SGItem constructed from the item in your hand.
+    usage: /sgadditem <rarity> <min-count> <max-count>
     permission: ShutterPvP.maps
   sgaddmineable:
     description: Makes the type of block your looking at mineable when playing on the selected map.

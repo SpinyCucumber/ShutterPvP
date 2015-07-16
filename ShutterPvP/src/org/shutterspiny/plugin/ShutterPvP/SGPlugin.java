@@ -69,7 +69,7 @@ public class SGPlugin extends JavaPlugin {
 		//Use plugin utils to load files
 		node = new ParentNode(new MapBuilder<String,FileNode<?>>()
 				.with("maps", new MapNode<SGMap>(new ConverterNode<SGMap, SGRawMap>(new JSONObjectFile<SGRawMap>(SGRawMap.class)), new Factory<Map<String,SGMap>>(){ public Map<String, SGMap> create() { return new HashMap<String, SGMap>();}}, ".json"))
-				.with("items.json", new JSONObjectFile<SGItem[]>(SGItem[].class))
+				.with("items.json", new JSONObjectFile<SGRawItem[]>(SGRawItem[].class))
 				.end());
 		
 		try {
@@ -150,7 +150,10 @@ public class SGPlugin extends JavaPlugin {
 		});
 		game = new SGGame(this);
 		for(SGMap map : maps.values()) map.setPlugin(this);
-		for(AbstractCommand<SGPlugin, ?> command : Commands.sgCommands) command.register(this);
+		for(AbstractCommand<SGPlugin, ?> command : Commands.sgCommands) {
+			log(Level.INFO, "Registering command " + command.getName() + "...");
+			command.register(this);
+		}
 	}
 	
 	@Override

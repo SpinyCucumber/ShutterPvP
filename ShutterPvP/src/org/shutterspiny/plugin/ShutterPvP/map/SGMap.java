@@ -43,6 +43,10 @@ public class SGMap implements Convertable<SGRawMap> {
 	public void setPlugin(SGPlugin plugin) {
 		for(SGChest chest : chests) chest.pluginInstance = plugin;
 	}
+	
+	public void load() {
+		for(SGChest chest : chests) chest.load();
+	}
 
 	@Override
 	public SGRawMap convert() {

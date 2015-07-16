@@ -47,7 +47,7 @@ public final class Commands {
 		
 		sgCommands = new ArrayList<AbstractCommand<SGPlugin, ?>>();
 		
-		sgCommands.add(new AbstractCommand<SGPlugin, CommandSender>(new Argument<?>[]{}, "save", CommandSender.class){
+		sgCommands.add(new AbstractCommand<SGPlugin, CommandSender>(new Argument<?>[]{}, "sgsave", CommandSender.class){
 			protected String run(CommandSender sender, List<Object> args) throws CommandException {
 				try {
 					this.getPlugin().save();

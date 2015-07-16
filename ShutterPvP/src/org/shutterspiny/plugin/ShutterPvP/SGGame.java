@@ -32,7 +32,6 @@ import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 import org.shutterspiny.lib.PluginUtils.command.AbstractCommand.CommandException;
 import org.shutterspiny.lib.PluginUtils.misc.ObjectiveWriter;
-import org.shutterspiny.plugin.ShutterPvP.item.SGChest;
 import org.shutterspiny.plugin.ShutterPvP.map.SGBlockType;
 import org.shutterspiny.plugin.ShutterPvP.map.SGMap;
 
@@ -300,10 +299,12 @@ public class SGGame implements Listener {
 	
 	public void start() throws CommandException {
 		
+		if(players.size() < 1) throw new CommandException("Not enough players!");
 		if(map == null) throw new CommandException("Must select map first.");
 		if(status != GameStatus.WAITING) throw new CommandException("The game is already in progress.");
-
-		for(SGChest chest : map.chests) chest.load();
+		if(map.spawnPoints.size() == 0) throw new CommandException("No spawnpoints!");
+		
+		map.load();
 
 		for(int i = 0; i < players.size(); i++) {
 			Location spawn = map.spawnPoints.get(i % map.spawnPoints.size());
