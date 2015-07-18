@@ -14,6 +14,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
@@ -21,6 +22,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.inventory.ItemStack;
@@ -103,7 +105,8 @@ public class SGGame implements Listener {
 			Date date = new Date(time * 1000);
 			writer.write(ChatColor.GREEN + "Time Elapsed: " + DATE_FORMAT.format(date));
 			writer.writeSpace();
-			writer.write(ChatColor.GREEN + "Next Event: " + events.get(eventIndex).name);
+			writer.write(ChatColor.GREEN + "Next Event: " + 
+					(eventIndex == events.size() ? "None" : events.get(eventIndex).name));
 			writer.writeSpace();
 			for(Player player : players) writer.write(ChatColor.YELLOW + player.getName());
 			writer.write(ChatColor.GREEN + "Players In-Game");
@@ -162,6 +165,7 @@ public class SGGame implements Listener {
 		alivePlayers = new ArrayList<Player>();
 		events = new ArrayList<GameEvent>();
 		freezers = new ArrayList<PlayerFreezer>();
+		spawnerTimers = new ArrayList<SpawnerTimer>();
 		changedBlocks = new HashMap<Block, SGBlockType>();
 		timer = new GameTimer();
 		timer.runTaskTimer(pluginInstance, 0, 20);
@@ -175,7 +179,7 @@ public class SGGame implements Listener {
 			public void run(SGGame game) {
 				for(PlayerFreezer freezer : game.freezers) freezer.cancel();
 				game.freezers.clear();
-				game.alivePlayers = new ArrayList<Player>(game.players);
+				for(SGSpawner spawner : map.spawners) spawnerTimers.add(spawner.new SpawnerTimer());
 			}
 		});
 		events.add(new GameEvent(pluginInstance.getConfig().getInt("Invincible"), "vulnerability", "Players are now vulnerable. Attack!") {
@@ -266,6 +270,13 @@ public class SGGame implements Listener {
 	}
 	
 	@EventHandler
+	public void onEntityDeath(EntityDeathEvent event) {
+		Entity entity = event.getEntity();
+		for(SpawnerTimer spawner : spawnerTimers)
+			if(spawner.spawned.contains(entity)) spawner.spawned.remove(entity);
+	}
+	
+	@EventHandler
 	public void onPlayerDeath(PlayerDeathEvent event) {
 		Player player = event.getEntity();
 		if(!timer.running || !alivePlayers.contains(player)) return;
@@ -299,6 +310,7 @@ public class SGGame implements Listener {
 		if(map.spawnPoints.size() == 0) throw new CommandException("No spawnpoints!");
 		
 		map.load();
+		alivePlayers = new ArrayList<Player>(players);
 
 		for(int i = 0; i < players.size(); i++) {
 			Location spawn = map.spawnPoints.get(i % map.spawnPoints.size());
@@ -307,7 +319,6 @@ public class SGGame implements Listener {
 			player.setGameMode(GameMode.SURVIVAL);
 			freezers.add(new PlayerFreezer(player, spawn));
 		}
-		for(SGSpawner spawner : map.spawners) spawnerTimers.add(spawner.new SpawnerTimer());
 		
 		timer.start();
 		

@@ -6,11 +6,13 @@ import org.shutterspiny.plugin.ShutterPvP.entity.SGEntityType;
 
 public class SGRawEntityType implements Convertable<SGEntityType> {
 	
-	private String typeName;
+	public String typeName;
 
 	public SGRawEntityType(String typeName) {
 		this.typeName = typeName;
 	}
+	
+	public SGRawEntityType() {}
 
 	@Override
 	public SGEntityType convert() {

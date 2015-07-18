@@ -45,9 +45,10 @@ commands:
   sgaddplaceable:
     description: Makes the type of block your looking at placeable when playing on the selected map.
     usage: /sgaddplaceable
+    permission: ShutterPvP.maps
   sgaddentity:
     description: Adds an entity.
-    usage: /sgaddentitytype <entity-name> <entity-type-name>
+    usage: /sgaddentity <entity-name> <entity-type-name>
     permission: ShutterPvP.maps
   sgaddspawner:
     description: Adds a SGSpawner where you're standing to the currently selected map. Set repeats to -1 to repeat forever.

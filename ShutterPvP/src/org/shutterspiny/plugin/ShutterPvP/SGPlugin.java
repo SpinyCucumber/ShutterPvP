@@ -87,6 +87,7 @@ public class SGPlugin extends JavaPlugin {
 			this.reloadConfig();
 			Map<String, Object> files = node.load(this.getDataFolder());
 			maps = (Map<String, SGMap>) files.get("maps");
+			entities = (Map<String, SGEntityType>) files.get("entities");
 			items = Files.convertList(Arrays.asList((SGRawItem[]) files.get("items.json")));
 			log(Level.INFO, "Successfully loaded data.");
 			
@@ -94,6 +95,7 @@ public class SGPlugin extends JavaPlugin {
 			
 			log(Level.WARNING, "Data files either missing or corrupted. Using default data.");
 			maps = new HashMap<String, SGMap>();
+			entities = new HashMap<String, SGEntityType>();
 			items = new ArrayList<SGItem>();
 			save();
 		
@@ -140,6 +142,7 @@ public class SGPlugin extends JavaPlugin {
 		
 		Map<String, Object> files = new HashMap<String, Object>();
 		files.put("maps", maps);
+		files.put("entities", entities);
 		files.put("items.json", Files.toArray(Files.convertList(items), SGRawItem.class));
 		
 		log(Level.INFO, "Saving data...");
