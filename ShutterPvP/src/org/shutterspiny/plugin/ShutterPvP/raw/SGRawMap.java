@@ -2,7 +2,7 @@ package org.shutterspiny.plugin.ShutterPvP.raw;
 
 import java.util.Arrays;
 
-import org.shutterspiny.lib.PluginUtils.files.FileUtils;
+import org.shutterspiny.lib.PluginUtils.files.Files;
 import org.shutterspiny.lib.PluginUtils.mapping.Convertable;
 import org.shutterspiny.plugin.ShutterPvP.entity.SGSpawner;
 import org.shutterspiny.plugin.ShutterPvP.map.SGMap;
@@ -28,10 +28,10 @@ public class SGRawMap implements Convertable<SGMap> {
 
 	@Override
 	public SGMap convert() {
-		return new SGMap(FileUtils.convertList(Arrays.asList(mineables)),
-				FileUtils.convertList(Arrays.asList(placeables)),
-				FileUtils.convertList(Arrays.asList(chests)),
-				FileUtils.convertList(Arrays.asList(spawnPoints)),
+		return new SGMap(Files.convertList(Arrays.asList(mineables)),
+				Files.convertList(Arrays.asList(placeables)),
+				Files.convertList(Arrays.asList(chests)),
+				Files.convertList(Arrays.asList(spawnPoints)),
 				Arrays.asList(entities)
 				);
 	}

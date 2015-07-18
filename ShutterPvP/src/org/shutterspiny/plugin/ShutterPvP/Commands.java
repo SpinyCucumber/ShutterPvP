@@ -9,13 +9,17 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.command.CommandSender;
 import org.bukkit.enchantments.Enchantment;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.shutterspiny.lib.PluginUtils.command.AbstractCommand;
 import org.shutterspiny.lib.PluginUtils.command.AbstractCommand.Argument;
 import org.shutterspiny.lib.PluginUtils.command.Args;
+import org.shutterspiny.lib.PluginUtils.command.Args.EnumArg;
 import org.shutterspiny.lib.PluginUtils.command.ItemCommand;
 import org.shutterspiny.plugin.ShutterPvP.SGPlugin.SGPlayerData;
+import org.shutterspiny.plugin.ShutterPvP.entity.SGEntityType;
+import org.shutterspiny.plugin.ShutterPvP.entity.SGSpawner;
 import org.shutterspiny.plugin.ShutterPvP.item.SGChest;
 import org.shutterspiny.plugin.ShutterPvP.item.SGItem;
 import org.shutterspiny.plugin.ShutterPvP.map.SGBlockType;
@@ -101,6 +105,19 @@ public final class Commands {
 			}
 		});
 		
+		sgCommands.add(new AbstractCommand<SGPlugin, CommandSender>(new Argument<?>[]{Args.NONE}, "sgmapinfo", CommandSender.class){
+			protected String run(CommandSender sender, List<Object> args) throws CommandException {
+				String name = (String) args.get(0);
+				if(!this.getPlugin().getMaps().containsKey(name))
+					throw new CommandException("That map does not exist.");
+				SGMap map = this.getPlugin().getMaps().get(name);
+				sender.sendMessage(map.chests.size() + " chests");
+				sender.sendMessage(map.spawners.size() + " spawners");
+				sender.sendMessage(map.spawnPoints.size() + " spawnPoints");
+				return "Displayed info for map " + name + ".";
+			}
+		});
+		
 		sgCommands.add(new AbstractCommand<SGPlugin, CommandSender>(new Argument<?>[]{}, "sglistmaps", CommandSender.class){
 			protected String run(CommandSender sender, List<Object> args) throws CommandException {
 				int size = this.getPlugin().getMaps().size();
@@ -146,6 +163,26 @@ public final class Commands {
 			}
 		});
 		
+		sgCommands.add(new SGMapCommand(new Argument<?>[]{Args.NONE, Args.INT, Args.INT, Args.INT}, "sgaddspawner"){
+			protected String runMap(Player sender, SGMap map, String name, List<Object> args) throws CommandException {
+				String type = (String) args.get(0);
+				if(!this.getPlugin().getEntities().containsKey(name))
+					throw new CommandException("EntityType does not exist.");
+				SGSpawner spawner = new SGSpawner(this.getPlugin().getEntities().get(type),
+						(Integer) args.get(1), (Integer) args.get(2), (Integer) args.get(3), sender.getLocation());
+				map.spawners.add(spawner);
+				return spawner + " has been successfully added to map " + name;
+			}
+		});
+		
+		sgCommands.add(new AbstractCommand<SGPlugin, Player>(new Argument<?>[]{Args.NONE, new EnumArg<EntityType>(EntityType.class)}, "sgaddentity", Player.class){
+			protected String run(Player sender, List<Object> args) throws CommandException {
+				SGEntityType type = new SGEntityType((EntityType) args.get(0));
+				this.getPlugin().getEntities().put((String) args.get(0), type);
+				return type + " has been successfully added.";
+			}
+		});
+		
 		sgCommands.add(new ItemCommand<SGPlugin>(new Argument<?>[]{Args.DOUBLE, Args.INT, Args.INT, Args.INT, Args.INT}, "sgadditem"){
 			protected String runItem(Player sender, ItemStack stack, List<Object> args) throws CommandException {
 				SGItem item = SGItem.fromItemStack(stack, (Double) args.get(0),
@@ -168,8 +205,8 @@ public final class Commands {
 			protected String runItem(Player sender, ItemStack stack, List<Object> args) throws CommandException {
 				Enchantment enchant = (Enchantment) args.get(0);
 				Integer level = (Integer) args.get(1);
-				stack.getItemMeta().addEnchant(enchant, level, true);
-				return enchant.getName() + " x" + level + " has been added to " + stack + ".";
+				stack.addUnsafeEnchantment(enchant, level);
+				return enchant.getName() + " x" + level + " has been successfully added.";
 			}
 		});
 		

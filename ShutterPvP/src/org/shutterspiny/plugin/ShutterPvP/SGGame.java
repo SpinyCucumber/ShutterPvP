@@ -14,7 +14,6 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.event.EventHandler;
@@ -32,6 +31,8 @@ import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 import org.shutterspiny.lib.PluginUtils.command.AbstractCommand.CommandException;
 import org.shutterspiny.lib.PluginUtils.misc.ObjectiveWriter;
+import org.shutterspiny.plugin.ShutterPvP.entity.SGSpawner;
+import org.shutterspiny.plugin.ShutterPvP.entity.SGSpawner.SpawnerTimer;
 import org.shutterspiny.plugin.ShutterPvP.map.SGBlockType;
 import org.shutterspiny.plugin.ShutterPvP.map.SGMap;
 
@@ -52,12 +53,6 @@ public class SGGame implements Listener {
 		
 	}
 	
-	private enum GameStatus {
-		WAITING,
-		INVINCIBLE,
-		FIGHTING
-	}
-	
 	private class GameTimer extends BukkitRunnable {
 		
 		private int time, lastTime, eventIndex, seconds, factor;
@@ -70,17 +65,6 @@ public class SGGame implements Listener {
 		
 		private GameEvent event() {
 			return events.get(eventIndex);
-		}
-		
-		public void start() {
-			running = true;
-		}
-		
-		public void stop() {
-			running = false;
-			eventIndex = 0;
-			time = 0;
-			lastTime = 0;
 		}
 		
 		public void run() {
@@ -99,6 +83,18 @@ public class SGGame implements Listener {
 				time++;
 			}
 			updateScoreboard();
+			for(SpawnerTimer spawner : spawnerTimers) spawner.update();
+		}
+		
+		public void start() {
+			running = true;
+		}
+		
+		public void stop() {
+			running = false;
+			eventIndex = 0;
+			time = 0;
+			lastTime = 0;
 		}
 
 		private void updateScoreboard() {
@@ -107,10 +103,12 @@ public class SGGame implements Listener {
 			Date date = new Date(time * 1000);
 			writer.write(ChatColor.GREEN + "Time Elapsed: " + DATE_FORMAT.format(date));
 			writer.writeSpace();
+			writer.write(ChatColor.GREEN + "Next Event: " + events.get(eventIndex).name);
+			writer.writeSpace();
 			for(Player player : players) writer.write(ChatColor.YELLOW + player.getName());
 			writer.write(ChatColor.GREEN + "Players In-Game");
 			writer.writeSpace();
-			writer.write(ChatColor.GREEN + "Players Remaining: " + alivePlayers.size());
+			writer.write(ChatColor.GREEN + "Players Dead: " + (players.size() - alivePlayers.size()));
 		}
 		
 	}
@@ -133,8 +131,6 @@ public class SGGame implements Listener {
 		
 	}
 	
-	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("mm:ss");
-	
 	private static void clear(Player player) {
 		player.setHealth(20);
 		player.setFoodLevel(20);
@@ -145,16 +141,17 @@ public class SGGame implements Listener {
 		inventory.setArmorContents(new ItemStack[]{null, null, null, null});
 	}
 	
+	private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("mm:ss");
+	
 	private SGPlugin pluginInstance;
 	private SGMap map;
 	private Scoreboard scoreboard;
 	private List<Player> players, alivePlayers;
-	private List<Entity> spawnedEntities;
 	private List<GameEvent> events;
 	private List<PlayerFreezer> freezers;
+	private List<SpawnerTimer> spawnerTimers;
 	
 	private Map<Block, SGBlockType> changedBlocks;
-	private GameStatus status = GameStatus.WAITING;
 	
 	private GameTimer timer;
 	
@@ -163,7 +160,6 @@ public class SGGame implements Listener {
 		this.pluginInstance = pluginInstance;
 		players = new ArrayList<Player>();
 		alivePlayers = new ArrayList<Player>();
-		spawnedEntities = new ArrayList<Entity>();
 		events = new ArrayList<GameEvent>();
 		freezers = new ArrayList<PlayerFreezer>();
 		changedBlocks = new HashMap<Block, SGBlockType>();
@@ -180,12 +176,11 @@ public class SGGame implements Listener {
 				for(PlayerFreezer freezer : game.freezers) freezer.cancel();
 				game.freezers.clear();
 				game.alivePlayers = new ArrayList<Player>(game.players);
-				game.status = GameStatus.INVINCIBLE;
 			}
 		});
 		events.add(new GameEvent(pluginInstance.getConfig().getInt("Invincible"), "vulnerability", "Players are now vulnerable. Attack!") {
 			public void run(SGGame game) {
-				game.status = GameStatus.FIGHTING;
+				//Do something cool
 			}
 		});
 		Bukkit.getPluginManager().registerEvents(this, pluginInstance);
@@ -199,9 +194,8 @@ public class SGGame implements Listener {
 	
 	public void end() throws CommandException {
 		
-		if(status == GameStatus.WAITING) throw new CommandException("The game has not yet started.");
+		if(!timer.running) throw new CommandException("The game has not yet started.");
 		broadcast(ChatColor.GREEN + "" + ChatColor.BOLD + "The game has ended.");
-		status = GameStatus.WAITING;
 		
 		timer.stop();
 		
@@ -209,7 +203,7 @@ public class SGGame implements Listener {
 		
 		for(Entry<Block, SGBlockType> entry : changedBlocks.entrySet())
 			entry.getValue().set(entry.getKey());
-		for(Entity entity : spawnedEntities) if(entity.isValid()) entity.remove();
+		for(SpawnerTimer spawner : spawnerTimers) spawner.removeEntities();
 		
 		boolean playersLeave = pluginInstance.getConfig().getBoolean("PlayersLeave");
 		if(playersLeave) {
@@ -220,14 +214,8 @@ public class SGGame implements Listener {
 		
 		alivePlayers.clear();
 		changedBlocks.clear();
-		spawnedEntities.clear();
+		spawnerTimers.clear();
 		
-	}
-	
-	public void setMap(String mapName) throws CommandException {
-		if(!pluginInstance.getMaps().containsKey(mapName))
-			throw new CommandException("That map does not exist.");
-		map = pluginInstance.getMaps().get(mapName);
 	}
 	
 	public void join(Player player) throws CommandException {
@@ -240,14 +228,14 @@ public class SGGame implements Listener {
 	public void leave(Player player) throws CommandException {
 		if(!players.contains(player)) throw new CommandException("You are not in the game.");
 		broadcast(ChatColor.GREEN + "" + ChatColor.BOLD + player.getName() + " has left the game.");
-		if(status != GameStatus.WAITING) removePlayer(player);
+		if(timer.running) removePlayer(player);
 		players.remove(player);
 		player.setScoreboard(Bukkit.getScoreboardManager().getMainScoreboard());
 	}
 	
 	@EventHandler
 	public void onBlockBreak(BlockBreakEvent event) {
-		if(status == GameStatus.WAITING || !alivePlayers.contains(event.getPlayer())) return;
+		if(!timer.running || !alivePlayers.contains(event.getPlayer())) return;
 		Block block = event.getBlock();
 		if(map.isMineable(block)) changedBlocks.put(block, new SGBlockType(block));
 		else if(!map.isPlaceable(block)) event.setCancelled(true);
@@ -255,7 +243,7 @@ public class SGGame implements Listener {
 	
 	@EventHandler
 	public void onBlockPlace(BlockPlaceEvent event) {
-		if(status == GameStatus.WAITING || !alivePlayers.contains(event.getPlayer())) return;
+		if(!timer.running || !alivePlayers.contains(event.getPlayer())) return;
 		Block block = event.getBlock();
 		if(map.isPlaceable(block)) {
 			if(!changedBlocks.containsKey(block)) changedBlocks.put(block, new SGBlockType(Material.AIR, (byte) 0));
@@ -264,14 +252,14 @@ public class SGGame implements Listener {
 	
 	@EventHandler
 	public void onEntityDamageEvent(EntityDamageEvent event) {
-		if(status == GameStatus.FIGHTING || !(event.getEntity() instanceof Player)) return;
+		if(!(timer.eventIndex == 1) || !(event.getEntity() instanceof Player)) return;
 		Player player = (Player) event.getEntity();
 		if(alivePlayers.contains(player)) event.setCancelled(true);
 	}
 	
 	@EventHandler
 	public void onExplode(EntityExplodeEvent event) {
-		if(status == GameStatus.WAITING || !(event.getEntity() instanceof TNTPrimed)) return;
+		if(!timer.running || !(event.getEntity() instanceof TNTPrimed)) return;
 		TNTPrimed entity = (TNTPrimed) event.getEntity();
 		if(!alivePlayers.contains(entity.getSource())) return;
 		for(Block block : event.blockList()) changedBlocks.put(block, new SGBlockType(block));
@@ -280,7 +268,7 @@ public class SGGame implements Listener {
 	@EventHandler
 	public void onPlayerDeath(PlayerDeathEvent event) {
 		Player player = event.getEntity();
-		if(status == GameStatus.WAITING || !alivePlayers.contains(player)) return;
+		if(!timer.running || !alivePlayers.contains(player)) return;
 		broadcast(player.getName() + " has died!");
 		if(removePlayer(player)) event.getDrops().clear();
 	}
@@ -297,11 +285,17 @@ public class SGGame implements Listener {
 		return oneLeft;
 	}
 	
+	public void setMap(String mapName) throws CommandException {
+		if(!pluginInstance.getMaps().containsKey(mapName))
+			throw new CommandException("That map does not exist.");
+		map = pluginInstance.getMaps().get(mapName);
+	}
+	
 	public void start() throws CommandException {
 		
 		if(players.size() < 1) throw new CommandException("Not enough players!");
 		if(map == null) throw new CommandException("Must select map first.");
-		if(status != GameStatus.WAITING) throw new CommandException("The game is already in progress.");
+		if(timer.running) throw new CommandException("The game is already in progress.");
 		if(map.spawnPoints.size() == 0) throw new CommandException("No spawnpoints!");
 		
 		map.load();
@@ -313,6 +307,7 @@ public class SGGame implements Listener {
 			player.setGameMode(GameMode.SURVIVAL);
 			freezers.add(new PlayerFreezer(player, spawn));
 		}
+		for(SGSpawner spawner : map.spawners) spawnerTimers.add(spawner.new SpawnerTimer());
 		
 		timer.start();
 		

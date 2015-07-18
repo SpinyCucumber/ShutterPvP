@@ -10,7 +10,7 @@ import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.EnchantmentStorageMeta;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.shutterspiny.lib.PluginUtils.files.FileUtils;
+import org.shutterspiny.lib.PluginUtils.files.Files;
 import org.shutterspiny.lib.PluginUtils.mapping.Convertable;
 import org.shutterspiny.plugin.ShutterPvP.raw.SGRawEnchantment;
 import org.shutterspiny.plugin.ShutterPvP.raw.SGRawItem;
@@ -88,7 +88,7 @@ public class SGItem implements Convertable<SGRawItem> {
 	public SGRawItem convert() {
 		return new SGRawItem(rarity, type.name(), minCount, maxCount,
 				minDamage, maxDamage, name,
-				FileUtils.toArray(FileUtils.convertList(enchants), SGRawEnchantment.class));
+				Files.toArray(Files.convertList(enchants), SGRawEnchantment.class));
 	}
 	
 	public static SGItem fromItemStackDamaged(ItemStack stack, double rarity, int minCount, int maxCount) {

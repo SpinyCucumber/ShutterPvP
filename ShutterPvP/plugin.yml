@@ -6,6 +6,10 @@ commands:
     description: Creates a SG map.
     usage: /sgcreatemap <map-name>
     permission: ShutterPvP.maps
+  sgmapinfo:
+    description: Displays info about a SG map.
+    usage: /sgmapinfo <map-name>
+    permission: ShutterPvP.maps
   sgeditmap:
     description: Selects a SG map for editing.
     usage: /sgeditmap <map-name>
@@ -19,7 +23,7 @@ commands:
     usage: /sgaddchest <rarity>
     permission: ShutterPvP.maps
   sgaddspawnpoint:
-    description: Adds a spawnpoint at the block you're standing in.
+    description: Adds a spawnpoint where you're standing in.
     usage: /sgspawnpoint
     permission: ShutterPvP.maps
   sgadditem:
@@ -41,10 +45,13 @@ commands:
   sgaddplaceable:
     description: Makes the type of block your looking at placeable when playing on the selected map.
     usage: /sgaddplaceable
+  sgaddentity:
+    description: Adds an entity.
+    usage: /sgaddentitytype <entity-name> <entity-type-name>
     permission: ShutterPvP.maps
   sgaddspawner:
-    description: Adds a SGSpawner to the currently selected map.
-    usage: /sgaddspawner
+    description: Adds a SGSpawner where you're standing to the currently selected map. Set repeats to -1 to repeat forever.
+    usage: /sgaddspawner <entity-name> <delay> <max-entities> <repeats>
     permission: ShutterPvP.maps
   sgsave:
     description: Saves maps.

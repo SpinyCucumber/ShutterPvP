@@ -5,7 +5,7 @@ import java.util.List;
 
 import org.bukkit.Location;
 import org.bukkit.block.Block;
-import org.shutterspiny.lib.PluginUtils.files.FileUtils;
+import org.shutterspiny.lib.PluginUtils.files.Files;
 import org.shutterspiny.lib.PluginUtils.mapping.Convertable;
 import org.shutterspiny.plugin.ShutterPvP.SGPlugin;
 import org.shutterspiny.plugin.ShutterPvP.entity.SGSpawner;
@@ -50,11 +50,11 @@ public class SGMap implements Convertable<SGRawMap> {
 
 	@Override
 	public SGRawMap convert() {
-		return new SGRawMap(FileUtils.toArray(FileUtils.convertList(mineables), SGRawBlockType.class),
-				FileUtils.toArray(FileUtils.convertList(placeables), SGRawBlockType.class),
-				FileUtils.toArray(FileUtils.convertList(chests), SGRawChest.class),
-				FileUtils.toArray(FileUtils.convertList(spawnPoints, RawLocation.converter), RawLocation.class),
-				FileUtils.toArray(spawners, SGSpawner.class));
+		return new SGRawMap(Files.toArray(Files.convertList(mineables), SGRawBlockType.class),
+				Files.toArray(Files.convertList(placeables), SGRawBlockType.class),
+				Files.toArray(Files.convertList(chests), SGRawChest.class),
+				Files.toArray(Files.convertList(spawnPoints, RawLocation.converter), RawLocation.class),
+				Files.toArray(spawners, SGSpawner.class));
 	}
 	
 	public boolean isMineable(Block block) {

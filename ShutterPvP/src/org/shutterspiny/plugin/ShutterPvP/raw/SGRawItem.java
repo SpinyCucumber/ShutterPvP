@@ -3,7 +3,7 @@ package org.shutterspiny.plugin.ShutterPvP.raw;
 import java.util.Arrays;
 
 import org.bukkit.Material;
-import org.shutterspiny.lib.PluginUtils.files.FileUtils;
+import org.shutterspiny.lib.PluginUtils.files.Files;
 import org.shutterspiny.lib.PluginUtils.mapping.Convertable;
 import org.shutterspiny.plugin.ShutterPvP.item.SGItem;
 
@@ -34,7 +34,7 @@ public class SGRawItem implements Convertable<SGItem> {
 	public SGItem convert() {
 		return new SGItem(rarity, Material.valueOf(type),
 				minCount, maxCount, minDamage, maxDamage, name,
-				FileUtils.convertList(Arrays.asList(enchants)));
+				Files.convertList(Arrays.asList(enchants)));
 	}
 	
 }
